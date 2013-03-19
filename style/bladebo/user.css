@@ -12,6 +12,10 @@ li.has-unread a{
 }
 
 .not-so-full-height{
-	height:80%;
+	height:calc(100%-115px);
 	overflow:auto;
+}
+
+li.folder{
+	margin-bottom:-10px;
 }
