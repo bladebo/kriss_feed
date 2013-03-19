@@ -1,10 +1,11 @@
 li.has-unread a{
-  font-weight: bold;	
+	font-weight: bold;	
 	color:#3C893C;
 }
 
 #minor-container{
 	height:100%;
+	float:left;
 }
 
 #list-container{
@@ -12,10 +13,16 @@ li.has-unread a{
 }
 
 .not-so-full-height{
-	height:calc(100%-115px);
+    height: -webkit-calc(100% - 145px);
+    height: -moz-calc(100% - 145px);
+    height: calc(100% - 145px);
 	overflow:auto;
 }
 
 li.folder{
 	margin-bottom:-10px;
+}
+
+.container-fluid{
+	padding-right:2px;
 }
