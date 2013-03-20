@@ -3,7 +3,9 @@
 // 2012 - Copyleft - Tontof - http://tontof.net
 // use KrISS feed at your own risk
 define('DATA_DIR', 'data');
+define('INC_DIR', 'inc');
 define('CACHE_DIR', DATA_DIR.'/cache');
+define('FAVICON_DIR', INC_DIR.'/favicon');
 
 define('DATA_FILE', DATA_DIR.'/data.php');
 define('CONFIG_FILE', DATA_DIR.'/config.php');
@@ -20,6 +22,35 @@ define('ERROR_NO_ERROR', 0);
 define('ERROR_NO_XML', 1);
 define('ERROR_ITEMS_MISSED', 2);
 define('ERROR_LAST_UPDATE', 3);
+
+// fix some warning
+date_default_timezone_set('Europe/Paris'); 
+
+/* function grabFavicon */
+function grabFavicon($url, $feedHash){
+    $url = 'http://getfavicon.appspot.com/'.$url.'?defaulticon=bluepng';
+    $file = FAVICON_DIR.'/favicon.'.$feedHash.'.ico';
+
+    if(!file_exists($file) && in_array('curl', get_loaded_extensions()) && Session::isLogged()){
+        $ch = curl_init ($url);
+        curl_setopt($ch, CURLOPT_HEADER, 0);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+        curl_setopt($ch, CURLOPT_BINARYTRANSFER,1);
+        $raw = curl_exec($ch);
+        if (curl_getinfo($ch, CURLINFO_HTTP_CODE) == 200) {
+            $fp = fopen($file, 'x');
+            fwrite($fp, $raw);
+            fclose($fp);
+        }
+        curl_close ($ch);
+    }
+
+    if (file_exists($file)) {
+        return $file;
+    } else {
+        return $url;
+    }
+}
 
 
 class FeedConf
@@ -55,6 +86,8 @@ class FeedConf
     public $autohide = false;
 
     public $autofocus = true;
+
+    public $addFavicon = false;
 
     public $public = false;
 
@@ -97,6 +130,20 @@ class FeedConf
             include_once $this->_file;
         } else {
             $this->_install();
+        }
+
+        if ($this->addFavicon) {
+            /* favicon dir */
+            if (!is_dir(INC_DIR)) {
+                if (!@mkdir(INC_DIR, 0755)) {
+                    die("Can not create inc dir: ".INC_DIR);
+                }
+            }
+            if (!is_dir(FAVICON_DIR)) {
+                if (!@mkdir(FAVICON_DIR, 0755)) {
+                    die("Can not create inc dir: ".FAVICON_DIR);
+                }
+            }
         }
 
         if (Session::isLogged()) {
@@ -387,6 +434,11 @@ class FeedConf
         $this->autofocus = $autofocus;
     }
 
+    public function setAddFavicon($addFavicon)
+    {
+        $this->addFavicon = $addFavicon;
+    }
+
     public function setShaarli($url)
     {
         $this->shaarli = $url;
@@ -539,7 +591,7 @@ class FeedConf
                       'autohide', 'autofocus', 'listFeeds', 'autoUpdate', 'menuView',
                       'menuListFeeds', 'menuFilter', 'menuOrder', 'menuUpdate',
                       'menuRead', 'menuUnread', 'menuEdit', 'menuAdd', 'menuHelp',
-                      'pagingItem', 'pagingPage', 'pagingByPage');
+                      'pagingItem', 'pagingPage', 'pagingByPage', 'addFavicon');
         $out = '<?php';
         $out .= "\n";
 
@@ -563,7 +615,7 @@ class FeedPage
     public static $var = array();
     private static $_instance;
 
-    public function init($var)
+    public static function init($var)
     {
         FeedPage::$var = $var;
     }
@@ -934,6 +986,21 @@ dl {
         <script>
           document.installform.setlogin.focus();
         </script>
+		<!-- Piwik -->
+<script type="text/javascript">
+  var _paq = _paq || [];
+  _paq.push(["trackPageView"]);
+  _paq.push(["enableLinkTracking"]);
+
+  (function() {
+    var u=(("https:" == document.location.protocol) ? "https" : "http") + "://piwik.sallet.fr/";
+    _paq.push(["setTrackerUrl", u+"piwik.php"]);
+    _paq.push(["setSiteId", "5"]);
+    var d=document, g=d.createElement("script"), s=d.getElementsByTagName("script")[0]; g.type="text/javascript";
+    g.defer=true; g.async=true; g.src=u+"piwik.js"; s.parentNode.insertBefore(g,s);
+  })();
+</script>
+<!-- End Piwik Code -->
       </div>
     </div>
   </body>
@@ -991,7 +1058,22 @@ dl {
           </div>
         </div>
       </div>
-    </div>                                           
+    </div>  
+<!-- Piwik -->
+<script type="text/javascript">
+  var _paq = _paq || [];
+  _paq.push(["trackPageView"]);
+  _paq.push(["enableLinkTracking"]);
+
+  (function() {
+    var u=(("https:" == document.location.protocol) ? "https" : "http") + "://piwik.sallet.fr/";
+    _paq.push(["setTrackerUrl", u+"piwik.php"]);
+    _paq.push(["setSiteId", "5"]);
+    var d=document, g=d.createElement("script"), s=d.getElementsByTagName("script")[0]; g.type="text/javascript";
+    g.defer=true; g.async=true; g.src=u+"piwik.js"; s.parentNode.insertBefore(g,s);
+  })();
+</script>
+<!-- End Piwik Code -->	
   </body>
 </html> 
 <?php
@@ -1284,6 +1366,20 @@ dl {
                   </div>
 
                   <div class="control-group">
+                    <label class="control-label">Add favicon option</label>
+                    <div class="controls">
+                      <label for="donotaddfavicon">
+                        <input type="radio" id="donotaddfavicon" name="addFavicon" value="0" <?php echo (!$kfcaddfavicon ? 'checked="checked"' : ''); ?>/>
+                        Do not add favicon next to feed on list of feeds
+                      </label>
+                      <label for="addfavicon">
+                        <input type="radio" id="addfavicon" name="addFavicon" value="1" <?php echo ($kfcaddfavicon ? 'checked="checked"' : ''); ?>/>
+                        Add favicon next to feed on list of feeds<br><strong>Warning: It depends on http://getfavicon.appspot.com/ <?php if (in_array('curl', get_loaded_extensions())) { echo 'but it will cache favicon on your server'; } ?></strong>                                                Add favicon next to feed on list of feeds<br><strong>Warning: It depends on http://getfavicon.appspot.com/</strong>
+                      </label>
+                    </div>
+                  </div>
+
+                  <div class="control-group">
                     <label class="control-label">Auto update with javascript</label>
                     <div class="controls">
                       <label for="donotautoupdate">
@@ -1414,14 +1510,17 @@ dl {
                     </div>
                   </div>
                 </fieldset>
-                <fieldset>
+               <fieldset>
                   <legend>Cron configuration</legend>
                   <code><?php echo MyTool::getUrl().'?update&cron='.$kfccron; ?></code>
                   You can use <code>&force</code> to force update.<br>
                   To update every 15 minutes
-                  <code>*/15 * * * * wget "<?php echo MyTool::getUrl().'?update&cron='.$kfccron; ?>" -O /tmp/kf.cron</code>
+                  <code>*/15 * * * * wget "<?php echo MyTool::getUrl().'?update&cron='.$kfccron; ?>" -O /tmp/kf.cron</code><br>
                   To update every hour
-                  <code>0 * * * * wget "<?php echo MyTool::getUrl().'?update&cron='.$kfccron; ?>" -O /tmp/kf.cron</code>
+
+                  <code>0 * * * * wget "<?php echo MyTool::getUrl().'?update&cron='.$kfccron; ?>" -O /tmp/kf.cron</code><br>
+                  If you can not use wget, you may try php command line :
+                  <code>0 * * * * php -f <?php echo $_SERVER["SCRIPT_FILENAME"].' update '.$kfccron; ?> > /tmp/kf.cron</code>
                   <div class="control-group">
                     <div class="controls">
                       <input class="btn" type="submit" name="cancel" value="Cancel"/>
@@ -1435,6 +1534,21 @@ dl {
         </div>
       </div>
     </div>
+	<!-- Piwik -->
+<script type="text/javascript">
+  var _paq = _paq || [];
+  _paq.push(["trackPageView"]);
+  _paq.push(["enableLinkTracking"]);
+
+  (function() {
+    var u=(("https:" == document.location.protocol) ? "https" : "http") + "://piwik.sallet.fr/";
+    _paq.push(["setTrackerUrl", u+"piwik.php"]);
+    _paq.push(["setSiteId", "5"]);
+    var d=document, g=d.createElement("script"), s=d.getElementsByTagName("script")[0]; g.type="text/javascript";
+    g.defer=true; g.async=true; g.src=u+"piwik.js"; s.parentNode.insertBefore(g,s);
+  })();
+</script>
+<!-- End Piwik Code -->
   </body>
 </html>
 <?php
@@ -1455,6 +1569,7 @@ dl {
             <?php FeedPage::navTpl(); ?>
             <div id="section">
               <h2>Keyboard shortcut</h2>
+              <h3>Items navigation</h3>
               <dl class="dl-horizontal">
                 <dt>'space' or 't'</dt>
                 <dd>When viewing items as list, let you open or close current item ('t'oggle current item)</dd>
@@ -1488,24 +1603,64 @@ dl {
                 <dd>Go to 'p'revious item and open it (in list view)</dd>
               </dl>
               <dl class="dl-horizontal">
-                <dt>'o' or 'v'</dt>
-                <dd>'O'pen/'V'iew current item in new tab</dd>
-                <dt>'shift' + 'o' or 'shift' + 'v'</dt>
-                <dd>'O'pen/'V'iew current item in current window</dd>
+                <dt>'o'</dt>
+                <dd>'O'pen current item in new tab</dd>
+                <dt>'shift' + 'o'</dt>
+                <dd>'O'pen current item in current window</dd>
               </dl>
               <dl class="dl-horizontal">
                 <dt>'s'</dt>
                 <dd>'S'hare current item (go in <a href="?config" title="configuration">configuration</a> to set up you link)</dd>
               </dl>
+              <h3>Menu navigation</h3>
               <dl class="dl-horizontal">
                 <dt>'h'</dt>
                 <dd>Go to 'H'ome page</dd>
+              </dl>
+              <dl class="dl-horizontal">
+                <dt>'v'</dt>
+                <dd>Change 'v'iew as list or expanded</dd>
+              </dl>
+              <dl class="dl-horizontal">
+                <dt>'f'</dt>
+                <dd>Show or hide list of 'f'eeds/'f'olders</dd>
+              </dl>
+              <dl class="dl-horizontal">
+                <dt>'e'</dt>
+                <dd>'E'dit current selection (all, folder or feed)</dd>
+              </dl>
+              <dl class="dl-horizontal">
+                <dt>'u'</dt>
+                <dd>'U'pdate current selection (all, folder or feed)</dd>
+              </dl>
+              <dl class="dl-horizontal">
+                <dt>'r'</dt>
+                <dd>'R'eload the page as the 'F5' key in most of browsers</dd>
+              </dl>
+              <dl class="dl-horizontal">
+                <dt>'?' or 'F1'</dt>
+                <dd>Go to Help page (actually it's shortcut to go to this page)</dd>
               </dl>
             </div>
           </div>
         </div>
       </div>
     </div>
+	<!-- Piwik -->
+<script type="text/javascript">
+  var _paq = _paq || [];
+  _paq.push(["trackPageView"]);
+  _paq.push(["enableLinkTracking"]);
+
+  (function() {
+    var u=(("https:" == document.location.protocol) ? "https" : "http") + "://piwik.sallet.fr/";
+    _paq.push(["setTrackerUrl", u+"piwik.php"]);
+    _paq.push(["setSiteId", "5"]);
+    var d=document, g=d.createElement("script"), s=d.getElementsByTagName("script")[0]; g.type="text/javascript";
+    g.defer=true; g.async=true; g.src=u+"piwik.js"; s.parentNode.insertBefore(g,s);
+  })();
+</script>
+<!-- End Piwik Code -->
   </body>
 </html>
 <?php
@@ -1571,6 +1726,21 @@ dl {
         </div>
       </div>
     </div>
+	<!-- Piwik -->
+<script type="text/javascript">
+  var _paq = _paq || [];
+  _paq.push(["trackPageView"]);
+  _paq.push(["enableLinkTracking"]);
+
+  (function() {
+    var u=(("https:" == document.location.protocol) ? "https" : "http") + "://piwik.sallet.fr/";
+    _paq.push(["setTrackerUrl", u+"piwik.php"]);
+    _paq.push(["setSiteId", "5"]);
+    var d=document, g=d.createElement("script"), s=d.getElementsByTagName("script")[0]; g.type="text/javascript";
+    g.defer=true; g.async=true; g.src=u+"piwik.js"; s.parentNode.insertBefore(g,s);
+  })();
+</script>
+<!-- End Piwik Code -->
   </body>
 </html>
 <?php
@@ -1651,6 +1821,21 @@ dl {
           </form>
         </div>
       </div>
+	  <!-- Piwik -->
+<script type="text/javascript">
+  var _paq = _paq || [];
+  _paq.push(["trackPageView"]);
+  _paq.push(["enableLinkTracking"]);
+
+  (function() {
+    var u=(("https:" == document.location.protocol) ? "https" : "http") + "://piwik.sallet.fr/";
+    _paq.push(["setTrackerUrl", u+"piwik.php"]);
+    _paq.push(["setSiteId", "5"]);
+    var d=document, g=d.createElement("script"), s=d.getElementsByTagName("script")[0]; g.type="text/javascript";
+    g.defer=true; g.async=true; g.src=u+"piwik.js"; s.parentNode.insertBefore(g,s);
+  })();
+</script>
+<!-- End Piwik Code -->
   </body>
 </html>
 <?php
@@ -1694,6 +1879,21 @@ dl {
         </div>
       </div>
     </div>
+	<!-- Piwik -->
+<script type="text/javascript">
+  var _paq = _paq || [];
+  _paq.push(["trackPageView"]);
+  _paq.push(["enableLinkTracking"]);
+
+  (function() {
+    var u=(("https:" == document.location.protocol) ? "https" : "http") + "://piwik.sallet.fr/";
+    _paq.push(["setTrackerUrl", u+"piwik.php"]);
+    _paq.push(["setSiteId", "5"]);
+    var d=document, g=d.createElement("script"), s=d.getElementsByTagName("script")[0]; g.type="text/javascript";
+    g.defer=true; g.async=true; g.src=u+"piwik.js"; s.parentNode.insertBefore(g,s);
+  })();
+</script>
+<!-- End Piwik Code -->
   </body>
 </html>
 <?php
@@ -1796,6 +1996,21 @@ dl {
         </div>
       </div>
     </div>
+	<!-- Piwik -->
+<script type="text/javascript">
+  var _paq = _paq || [];
+  _paq.push(["trackPageView"]);
+  _paq.push(["enableLinkTracking"]);
+
+  (function() {
+    var u=(("https:" == document.location.protocol) ? "https" : "http") + "://piwik.sallet.fr/";
+    _paq.push(["setTrackerUrl", u+"piwik.php"]);
+    _paq.push(["setSiteId", "5"]);
+    var d=document, g=d.createElement("script"), s=d.getElementsByTagName("script")[0]; g.type="text/javascript";
+    g.defer=true; g.async=true; g.src=u+"piwik.js"; s.parentNode.insertBefore(g,s);
+  })();
+</script>
+<!-- End Piwik Code -->
   </body>
 </html>
 <?php
@@ -1822,7 +2037,10 @@ dl {
                 <ul class="unstyled">
                   <?php $kf->updateFeedsHash($feedsHash, $forceUpdate, 'html')?>
                 </ul>
+                <a class="btn" href="?">Go home</a>
+                <?php if (!empty($referer)) { ?>
                 <a class="btn" href="<?php echo htmlspecialchars($referer); ?>">Go back</a>
+                <?php } ?>
               </div>
             </div>
           </div>
@@ -1832,6 +2050,21 @@ dl {
     <script type="text/javascript">
       <?php /* include("inc/script.js"); */ ?>
     </script>
+	<!-- Piwik -->
+<script type="text/javascript">
+  var _paq = _paq || [];
+  _paq.push(["trackPageView"]);
+  _paq.push(["enableLinkTracking"]);
+
+  (function() {
+    var u=(("https:" == document.location.protocol) ? "https" : "http") + "://piwik.sallet.fr/";
+    _paq.push(["setTrackerUrl", u+"piwik.php"]);
+    _paq.push(["setSiteId", "5"]);
+    var d=document, g=d.createElement("script"), s=d.getElementsByTagName("script")[0]; g.type="text/javascript";
+    g.defer=true; g.async=true; g.src=u+"piwik.js"; s.parentNode.insertBefore(g,s);
+  })();
+</script>
+<!-- End Piwik Code -->
   </body>
 </html>
 <?php
@@ -1887,6 +2120,21 @@ dl {
         </div>
       </div>
     </div>
+	<!-- Piwik -->
+<script type="text/javascript">
+  var _paq = _paq || [];
+  _paq.push(["trackPageView"]);
+  _paq.push(["enableLinkTracking"]);
+
+  (function() {
+    var u=(("https:" == document.location.protocol) ? "https" : "http") + "://piwik.sallet.fr/";
+    _paq.push(["setTrackerUrl", u+"piwik.php"]);
+    _paq.push(["setSiteId", "5"]);
+    var d=document, g=d.createElement("script"), s=d.getElementsByTagName("script")[0]; g.type="text/javascript";
+    g.defer=true; g.async=true; g.src=u+"piwik.js"; s.parentNode.insertBefore(g,s);
+  })();
+</script>
+<!-- End Piwik Code -->
   </body>
 </html> 
 <?php
@@ -1917,8 +2165,12 @@ dl {
         
         <?php if (!$autohide or ($autohide and $feed['nbUnread']!== 0)) { ?>
         <li id="<?php echo 'feed-'.$feedHash; ?>" class="feed<?php if ($feed['nbUnread']!== 0) echo ' has-unread'?>">
-          - <a class="mark-as" href="<?php echo $query.'read='.$feedHash; ?>"><span class="label"><?php echo $feed['nbUnread']; ?></span></a><a class="feed<?php echo (isset($feed['error'])?' text-error':''); ?>" href="<?php echo '?currentHash='.$feedHash; ?>" title="<?php echo $atitle; ?>"><?php echo htmlspecialchars($feed['title']); ?></a>
-          
+        <li id="<?php echo 'feed-'.$feedHash; ?>" class="feed<?php if ($feed['nbUnread']!== 0) echo ' has-unread'?>">
+          <?php if ($addFavicon) { ?>
+          <img src="<?php echo grabFavicon($feed['htmlUrl'], $feedHash); ?>" height="16px" width="16px" title="favicon" alt="favicon"/>
+          <?php } ?>
+<a class="mark-as" href="<?php echo $query.'read='.$feedHash; ?>"><span class="label"><?php echo $feed['nbUnread']; ?></span></a><a class="feed<?php echo (isset($feed['error'])?' text-error':''); ?>" href="<?php echo '?currentHash='.$feedHash; ?>" title="<?php echo $atitle; ?>"><?php echo htmlspecialchars($feed['title']); ?></a>
+           
         </li>
         <?php } ?>
 
@@ -1954,7 +2206,11 @@ dl {
             <?php if (!$autohide or ($autohide and $feed['nbUnread']!== 0)) { ?>
 
             <li id="folder-<?php echo $hashFolder; ?>-feed-<?php echo $feedHash; ?>" class="feed<?php if ($feed['nbUnread']!== 0) echo ' has-unread'?>">
-              - <a class="mark-as" href="<?php echo $query.'read='.$feedHash; ?>"><span class="label"><?php echo $feed['nbUnread']; ?></span></a><a class="feed<?php echo (isset($feed['error'])?' text-error':''); ?>" href="<?php echo '?currentHash='.$feedHash; ?>" title="<?php echo $atitle; ?>"><?php echo htmlspecialchars($feed['title']); ?></a>
+              
+              <?php if ($addFavicon) { ?>
+              <img src="<?php echo grabFavicon($feed['htmlUrl'], $feedHash); ?>" height="16px" width="16px" title="favicon" alt="favicon"/>
+              <?php } ?>
+              <a class="mark-as" href="<?php echo $query.'read='.$feedHash; ?>"><span class="label"><?php echo $feed['nbUnread']; ?></span></a><a class="feed<?php echo (isset($feed['error'])?' text-error':''); ?>" href="<?php echo '?currentHash='.$feedHash; ?>" title="<?php echo $atitle; ?>"><?php echo htmlspecialchars($feed['title']); ?></a>
             </li>
             <?php } ?>
             <?php } ?>
@@ -1986,6 +2242,7 @@ dl {
 
     <?php if ($view==='list') { ?>
     <a id="item-toggle-<?php echo $itemHash; ?>" class="item-toggle item-toggle-plus" href="<?php echo $query.'current='.$itemHash.((!isset($_GET['open']) or $currentItemHash != $itemHash)?'&amp;open':''); ?>" data-toggle="collapse" data-target="#item-div-<?php echo $itemHash; ?>">
+      <?php echo $item['time']['list']; ?>
       <span class="ico">
         <span class="ico-circle"></span>
         <span class="ico-line-h"></span>
@@ -2005,7 +2262,7 @@ dl {
           <?php } else { ?>
           <a class="item-mark-as" href="<?php echo $query.'read='.$itemHash; ?>"><span class="label">read</span></a>
           <?php } ?>
-          <a class="item-link" href="<?php echo $redirector.$item['link']; ?>">
+          <a target="_blank" class="item-link" href="<?php echo $redirector.$item['link']; ?>">
             <?php echo $item['title']; ?>
           </a>
         </span>
@@ -2027,9 +2284,10 @@ dl {
         <?php } else { ?>
         <a class="item-mark-as" href="<?php echo $query.'read='.$itemHash; ?>"><span class="label item-label-mark-as">read</span></a>
         <?php } ?>
-        <a class="item-link" href="<?php echo $redirector.$item['link']; ?>"><?php echo $item['title']; ?></a>
+        <a target="_blank" class="item-link" href="<?php echo $redirector.$item['link']; ?>"><?php echo $item['title']; ?></a>
         <div class="item-info-end">
           from <a class="item-via" href="<?php echo $redirector.$item['via']; ?>"><?php echo $item['author']; ?></a>
+          <?php echo $item['time']['expanded']; ?>
           <a class="item-xml" href="<?php echo $redirector.$item['xmlUrl']; ?>">
             <span class="ico">
               <span class="ico-feed-dot"></span>
@@ -2070,17 +2328,17 @@ dl {
         case 'pagingItem': ?>
   <li>
     <div class="btn-group">
-      <a class="btn btn-info previous-item" href="<?php echo $query.'previous='.$currentItemHash; ?>">Previous item</a>
-      <a class="btn btn-info next-item" href="<?php echo $query.'next='.$currentItemHash; ?>">Next item</a>
+      <a class="btn btn-info previous-item" href="<?php echo $query.'previous='.$currentItemHash; ?>"> < </a>
+      <a class="btn btn-info next-item" href="<?php echo $query.'next='.$currentItemHash; ?>"> > </a>
     </div>
   </li>
   <?php break; ?>
   <?php case 'pagingPage': ?>
   <li>
     <div class="btn-group">
-      <a class="btn btn-info previous-page<?php echo ($currentPage === 1)?' disabled':''; ?>" href="<?php echo $query.'previousPage='.$currentPage; ?>">Previous page</a>
+      <a class="btn btn-info previous-page<?php echo ($currentPage === 1)?' disabled':''; ?>" href="<?php echo $query.'previousPage='.$currentPage; ?>"> << </a>
       <button class="btn disabled current-max-page"><?php echo $currentPage.' / '.$maxPage; ?></button>
-      <a class="btn btn-info next-page<?php echo ($currentPage === $maxPage)?' disabled':''; ?>" href="<?php echo $query.'nextPage='.$currentPage; ?>">Next page</a>
+      <a class="btn btn-info next-page<?php echo ($currentPage === $maxPage)?' disabled':''; ?>" href="<?php echo $query.'nextPage='.$currentPage; ?>"> >> </a>
     </div>
   </li>
   <?php break; ?>
@@ -2088,12 +2346,12 @@ dl {
   <li>
     <form class="form-inline" action="<?php echo $kfurl; ?>" method="GET">
       <div class="input-prepend input-append paging-by-page">
-        <a class="btn btn-info" href="<?php echo $query.'byPage=1'; ?>">1</a>
+        <!--<a class="btn btn-info" href="<?php echo $query.'byPage=1'; ?>">1</a>-->
         <a class="btn btn-info" href="<?php echo $query.'byPage=10'; ?>">10</a>
-        <a class="btn btn-info" href="<?php echo $query.'byPage=50'; ?>">50</a>
+        <a class="btn btn-info" href="<?php echo $query.'byPage=35'; ?>">35</a>
         <input class="input-by-page input-mini" type="text" name="byPage">
         <input type="hidden" name="currentHash" value="<?php echo $currentHash; ?>">
-        <button type="submit" class="btn">items per page</button>
+        <button type="submit" class="btn"># per page</button>
       </div>
     </form>
   </li>
@@ -2123,7 +2381,7 @@ dl {
         <div id="main-container" class="span12 full-height">
           <?php FeedPage::statusTpl(); ?>
           <?php FeedPage::navTpl(); ?>
-  		  <div id="paging-up">
+			  <div id="paging-up">
 				<?php if (!empty($paging)) {FeedPage::pagingTpl();} ?>
 			  </div>
          <!-- <div id="paging-down">
@@ -2135,8 +2393,12 @@ dl {
 				</div>
 				<div id="list-container" class="span9 full-height">
 					<?php FeedPage::listItemsTpl(); ?>
+
+
 				</div>
 			</div>
+
+
 		</div>
         <?php } else { ?>
         <div id="main-container" class="span12 full-height">
@@ -2823,7 +3085,7 @@ dl {
     div.innerHTML = '<div class="item-title">' +
       '<a class="item-shaarli" href="' + '?currentHash=' + currentHash + '&shaarli=' + item['itemHash'] + '"><span class="label">share</span></a> ' +
       '<a class="item-mark-as" href="' + '?currentHash=' + currentHash + '&' + markAs + '=' + item['itemHash'] + '"><span class="label item-label-mark-as">' + markAs + '</span></a> ' +
-      '<a class="item-link" href="' + item['link'] + '">' +
+      '<a target="_blank" class="item-link" href="' + item['link'] + '">' +
       item['title'] +
       '</a>' +
       '</div>' +
@@ -2831,6 +3093,7 @@ dl {
       'from <a class="item-via" href="' + item['via'] + '">' +
       item['author'] +
       '</a>' +
+      item['time']['expanded'] +
       '<a class="item-xml" href="' + item['xmlUrl'] + '">' +
       '<span class="ico">' +
       '<span class="ico-feed-dot"></span>' +
@@ -2862,6 +3125,7 @@ dl {
     }
 
     li.innerHTML = '<a id="item-toggle-'+ item['itemHash'] +'" class="item-toggle-plus" href="' + '?currentHash=' + currentHash + '&current=' + item['itemHash'] +'&open" data-toggle="collapse" data-target="#item-div-'+ item['itemHash'] + '">' +
+      item['time']['list'] +
       '<span class="ico">' +
       '<span class="ico-circle"></span>' +
       '<span class="ico-line-h"></span>' +
@@ -2877,7 +3141,7 @@ dl {
       '<dd class="item-info">' +
       '<span class="item-title">' +
       '<a class="item-mark-as" href="' + '?currentHash=' + currentHash + '&' + markAs + '=' + item['itemHash'] + '"><span class="label">' + markAs + '</span></a> ' +
-      '<a class="item-link" href="' + item['link'] + '">' +
+      '<a target="_blank" class="item-link" href="' + item['link'] + '">' +
       item['title'] +
       '</a> ' +
       '</span>' +
@@ -3334,6 +3598,19 @@ dl {
         case 32: // 'space'
         toggleCurrentItem();
         break;
+        case 67: // 'C'
+        window.location.href = '?config';
+        break;
+        case 69: // 'E'
+        window.location.href = (currentHash==''?'?edit':'?edit='+currentHash);
+        break;
+        case 70: // 'F'
+        if (listFeeds =='show') {
+          window.location.href = (currentHash==''?'?':'?currentHash='+currentHash+'&')+'listFeeds=hide';
+        } else {
+          window.location.href = (currentHash==''?'?':'?currentHash='+currentHash+'&')+'listFeeds=show';
+        }
+        break;
         case 72: // 'H'
         window.location.href = document.getElementById('nav-home').href;
         break;
@@ -3357,7 +3634,6 @@ dl {
         }
         break;
         case 79: // 'O'
-        case 86: // 'V' as in RSS lounge
         if (e.shiftKey) {
           openCurrentItem(true);
         } else {
@@ -3372,11 +3648,29 @@ dl {
           previousItem();
         }
         break;
+        case 82: // 'R'
+        window.location.reload(true);
+        break;
         case 83: // 'S'
         shaarliCurrentItem();
         break;
         case 84: // 'T'
         toggleCurrentItem();
+        break;
+       case 85: // 'U'
+        window.location.href = (currentHash==''?'?update':'?update='+currentHash);
+        break;
+        case 86: // 'V'
+        if (view == 'list') {
+          window.location.href = (currentHash==''?'?':'?currentHash='+currentHash+'&')+'view=expanded';
+        } else {
+          window.location.href = (currentHash==''?'?':'?currentHash='+currentHash+'&')+'view=list';
+        }
+        break;
+        case 112: // 'F1'
+        case 188: // '?'
+        case 191: // '?'
+        window.location.href = '?help';
         break;
         default:
         break;
@@ -3651,7 +3945,8 @@ dl {
   }
 
   function initKF() {
-    var listLinkFolders = [],
+    var listItems,
+        listLinkFolders = [],
         listLinkItems = [];
 
     initOptions();
@@ -3675,12 +3970,15 @@ dl {
 
     initAnonyme();
 
-    addEvent(window, 'keyup', checkKey);
+    addEvent(window, 'keydown', checkKey);
     addEvent(window, 'touchstart', checkMove);
 
     if (autoupdate) {
       initUpdate();
     }
+
+    listItems = getListItems();
+    listItems.focus();
   }
 
   //http://scottandrew.com/weblog/articles/cbs-events
@@ -3706,11 +4004,6 @@ dl {
     }
   }
 
-  function test() {
-    alert(JSON.stringify(listItemsHash));
-
-  }
-
   // when document is loaded init KrISS feed
   if (document.getElementById && document.createTextNode) {
     addEvent(window, 'load', initKF);
@@ -3719,9 +4012,23 @@ dl {
   window.checkKey = checkKey;
   window.removeEvent = removeEvent;
   window.addEvent = addEvent;
-  window.test = test;
 })();    </script>
     <?php } ?>
+	<!-- Piwik -->
+<script type="text/javascript">
+  var _paq = _paq || [];
+  _paq.push(["trackPageView"]);
+  _paq.push(["enableLinkTracking"]);
+
+  (function() {
+    var u=(("https:" == document.location.protocol) ? "https" : "http") + "://piwik.sallet.fr/";
+    _paq.push(["setTrackerUrl", u+"piwik.php"]);
+    _paq.push(["setSiteId", "5"]);
+    var d=document, g=d.createElement("script"), s=d.getElementsByTagName("script")[0]; g.type="text/javascript";
+    g.defer=true; g.async=true; g.src=u+"piwik.js"; s.parentNode.insertBefore(g,s);
+  })();
+</script>
+<!-- End Piwik Code -->
   </body>
 </html>
 <?php
@@ -4196,6 +4503,13 @@ class Feed
 
         if (!empty($item)) {
             $item['itemHash'] = $itemHash;
+            $time = $item['time'];
+            if (strftime('%Y%m%d', $time) == strftime('%Y%m%d', time())) {
+                // Today
+                $item['time'] = array('list' => utf8_encode(strftime('%R %p', $time)), 'expanded' => utf8_encode(strftime('%A %d %B %Y - %H:%M', $time)));
+            } else {
+                $item['time'] = array('list' => utf8_encode(strftime('%b %e, %Y', $time)), 'expanded' => utf8_encode(strftime('%A %d %B %Y - %H:%M', $time)));                
+            }
             if (isset($this->_data['items'][$itemHash])) {
                 $item['read'] = $this->_data['items'][$itemHash][1];
 
@@ -4461,8 +4775,11 @@ class Feed
         return $formats;
     }
 
-    public function loadXml($xmlUrl)
+ public function loadXml($xmlUrl)
     {
+        // hide warning/error
+        set_error_handler(array('MyTool', 'silence_errors'));
+
         // set user agent
         // http://php.net/manual/en/function.libxml-set-streams-context.php
         $opts = array(
@@ -4471,14 +4788,31 @@ class Feed
                 'user_agent' => 'KrISS feed agent '.$this->kfc->version.' by Tontof.net http://github.com/tontof/kriss_feed',
                 )
             );
-
-        $context = stream_context_create($opts);
-        libxml_set_streams_context($context);
-
-        // request a file through HTTP
         $document = false;
-        set_error_handler(array('MyTool', 'silence_errors'));
-        $document = DOMDocument::load($xmlUrl);
+
+        if (in_array('curl', get_loaded_extensions())) {
+            $ch = curl_init();
+            curl_setopt($ch, CURLOPT_URL, $xmlUrl);
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+            curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
+            curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, $opts['http']['timeout']);
+            curl_setopt($ch, CURLOPT_TIMEOUT, $opts['http']['timeout']);
+            curl_setopt($ch, CURLOPT_USERAGENT, $opts['http']['user_agent']);
+            $output = curl_exec($ch);
+            curl_close($ch);
+
+            $document = DOMDocument::loadXML($output);
+        } else {
+            // try using libxml
+            $context = stream_context_create($opts);
+            libxml_set_streams_context($context);
+
+            // request a file through HTTP
+
+
+            $document = DOMDocument::load($xmlUrl);
+        }
+        // show back warning/error
         restore_error_handler();
 
         return $document;
@@ -4748,6 +5082,7 @@ class Feed
         $feedsHash = $this->orderFeedsForUpdate($feedsHash);
 
         ob_end_flush();
+        if (ob_get_level() == 0) ob_start();
         $start = microtime(true);
         foreach ($feedsHash as $feedHash) {
             $i++;
@@ -5051,17 +5386,22 @@ class MyTool
     {
         $https = (!empty($_SERVER['HTTPS'])
                   && (strtolower($_SERVER['HTTPS']) == 'on'))
-            || $_SERVER["SERVER_PORT"] == '443'; // HTTPS detection.
-        $serverport = ($_SERVER["SERVER_PORT"] == '80'
+            || (isset($_SERVER["SERVER_PORT"])
+                && $_SERVER["SERVER_PORT"] == '443'); // HTTPS detection.
+        $serverport = (!isset($_SERVER["SERVER_PORT"])
+                       || $_SERVER["SERVER_PORT"] == '80'
                        || ($https && $_SERVER["SERVER_PORT"] == '443')
                        ? ''
                        : ':' . $_SERVER["SERVER_PORT"]);
 
         $scriptname = ($_SERVER["SCRIPT_NAME"] == 'index.php' ? '' : $_SERVER["SCRIPT_NAME"]);
 
+        if (!isset($_SERVER["SERVER_NAME"])) {
+            return $scriptname;
+        }
+
         return 'http' . ($https ? 's' : '') . '://'
             . $_SERVER["SERVER_NAME"] . $serverport . $scriptname;
-
     }
 
     public static function rrmdir($dir)
@@ -5556,14 +5896,10 @@ class Session
     private static function _allInfo()
     {
         $infos = $_SERVER["REMOTE_ADDR"];
-        if (isset($_SERVER['HTTP_X_FORWARDED_FOR'])) {
-            $infos.=$_SERVER['HTTP_X_FORWARDED_FOR'];
-        }
-        if (isset($_SERVER['HTTP_CLIENT_IP'])) {
-            $infos.='_'.$_SERVER['HTTP_CLIENT_IP'];
-        }
-        $infos.='_'.$_SERVER['HTTP_USER_AGENT'];
-        $infos.='_'.$_SERVER['HTTP_ACCEPT_LANGUAGE'];
+        $infos.= isset($_SERVER['HTTP_X_FORWARDED_FOR']) ? '_'.$_SERVER['HTTP_X_FORWARDED_FOR'] : '';
+        $infos.= isset($_SERVER['HTTP_CLIENT_IP']) ? '_'.$_SERVER['HTTP_CLIENT_IP'] : '';
+        $infos.= isset($_SERVER['HTTP_USER_AGENT']) ? '_'.$_SERVER['HTTP_USER_AGENT'] : '';
+        $infos.= isset($_SERVER['HTTP_ACCEPT_LANGUAGE']) ? '_'.$_SERVER['HTTP_ACCEPT_LANGUAGE'] : '';
 
         return sha1($infos);
     }
@@ -5688,6 +6024,7 @@ $pb->assign('autoreadPage', $kfc->autoreadPage);
 $pb->assign('autohide', $kfc->autohide);
 $pb->assign('autofocus', $kfc->autofocus);
 $pb->assign('autoupdate', $kfc->autoUpdate);
+$pb->assign('addFavicon', $kfc->addFavicon);
 $pb->assign('version', FEED_VERSION);
 $pb->assign('kfurl', MyTool::getUrl());
 
@@ -5798,18 +6135,25 @@ if (isset($_GET['login'])) {
 } elseif (isset($_GET['help'])) {
     $pb->assign('pagetitle', 'Help for KrISS feed');
     $pb->renderPage('help');
-} elseif (isset($_GET['update'])
+} elseif ((isset($_GET['update'])
           && (Session::isLogged()
               || (isset($_GET['cron'])
-                  && $_GET['cron'] === sha1($kfc->salt.$kfc->hash)))) {
+                   && $_GET['cron'] === sha1($kfc->salt.$kfc->hash))))
+          || (isset($argv)
+              && count($argv) >= 3
+              && $argv[1] == 'update'
+              && $argv[2] == sha1($kfc->salt.$kfc->hash))) {
     // Update
     $kf->loadData();
     $forceUpdate = false;
     if (isset($_GET['force'])) {
         $forceUpdate = true;
     }
-    $feedsHash = array();
-    $hash = $_GET['update'];
+	$feedsHash = array();
+    $hash = 'all';
+    if (isset($_GET['update'])) {
+        $hash = $_GET['update'];
+    }
     // type : 'feed', 'folder', 'all', 'item'
     $type = $kf->hashType($hash);
     switch($type) {
@@ -5827,7 +6171,7 @@ if (isset($_GET['login'])) {
     default:
         break;
     }
-    if (isset($_GET['cron'])) {
+    if (isset($_GET['cron']) || isset($argv)) {
         $kf->updateFeedsHash($feedsHash, $forceUpdate);
     } else {
         $pb->assign('kf', $kf);
@@ -5862,6 +6206,7 @@ if (isset($_GET['login'])) {
         $pb->assign('kfcautoupdate', (int) $kfc->autoUpdate);
         $pb->assign('kfcautohide', (int) $kfc->autohide);
         $pb->assign('kfcautofocus', (int) $kfc->autofocus);
+        $pb->assign('kfcaddfavicon', (int) $kfc->addFavicon);
 
         $pb->assign('kfcmenu', $menu);
         $pb->assign('kfcpaging', $paging);
@@ -6263,3 +6608,4 @@ $type = $kf->hashType($currentHash);
         $pb->renderPage('login');
     }
 }
+//print(number_format(microtime(true)-START_TIME,3).' secondes');
