@@ -118,7 +118,8 @@ class FeedConf
 
     public $pagingItem = 1;
     public $pagingPage = 2;
-    public $pagingByPage = 3;
+    public $pagingByPage = 4;
+	public $pagingRead = 2;
 
     public function __construct($configFile, $version)
     {
@@ -512,7 +513,9 @@ class FeedConf
         if ($this->pagingByPage != 0) {
             $paging['pagingByPage'] = $this->pagingByPage;
         }
-
+        if ($this->pagingRead != 0) {
+            $paging['pagingRead'] = $this->pagingRead;
+        }
         asort($paging);
 
         return $paging;
@@ -582,6 +585,11 @@ class FeedConf
     {
         $this->pagingByPage = $pagingByPage;
     }
+	
+	public function setPagingRead($pagingRead)
+	{
+		$this->pagingRead = $pagingRead;
+	}
 
     public function write()
     {
@@ -591,7 +599,7 @@ class FeedConf
                       'autohide', 'autofocus', 'listFeeds', 'autoUpdate', 'menuView',
                       'menuListFeeds', 'menuFilter', 'menuOrder', 'menuUpdate',
                       'menuRead', 'menuUnread', 'menuEdit', 'menuAdd', 'menuHelp',
-                      'pagingItem', 'pagingPage', 'pagingByPage', 'addFavicon');
+                      'pagingItem', 'pagingPage', 'pagingByPage', 'pagingRead', 'addFavicon');
         $out = '<?php';
         $out .= "\n";
 
@@ -1503,6 +1511,13 @@ dl {
                       <span class="help-block">If you want to modify number of items by page</span>
                     </div>
                   </div>
+				  <div class="control-group">
+                    <label class="control-label" for="pagingRead">button read</label>
+                    <div class="controls">
+                      <input type="text" id="pagingRead" name="pagingRead" value="<?php echo empty($kfcpaging['pagingRead'])?'0':$kfcpaging['pagingRead']; ?>">
+                      <span class="help-block">If you want to have a button to read all current</span>
+                    </div>
+                  </div>				  
                   <div class="control-group">
                     <div class="controls">
                       <input class="btn" type="submit" name="cancel" value="Cancel"/>
@@ -2330,6 +2345,13 @@ dl {
     <div class="btn-group">
       <a class="btn btn-info previous-item" href="<?php echo $query.'previous='.$currentItemHash; ?>"> < </a>
       <a class="btn btn-info next-item" href="<?php echo $query.'next='.$currentItemHash; ?>"> > </a>
+    </div>
+  </li>
+  <?php break; ?>
+  <?php case 'pagingRead': ?>
+   <li>
+    <div class="btn-group">
+      <a href="<?php echo $query.'read='.$currentHash; ?>" class="btn btn-info read-item" title="Mark <?php echo $currentHashType; ?> as read">Mark as read</a>
     </div>
   </li>
   <?php break; ?>
@@ -6326,7 +6348,13 @@ if (isset($_GET['login'])) {
     if ($type === 'item') {
         MyTool::redirect($query.'current='.$hash);
     } else {
-        MyTool::redirect($query);
+		$filter = $_SESSION['filter'];
+		if($filter == all){
+			MyTool::redirect($query);
+		}else{
+			MyTool::redirect($query.'currentHash=all');
+		}
+        
     }
 } elseif (isset($_GET['edit']) && Session::isLogged()) {
     // Edit feed, folder, all
