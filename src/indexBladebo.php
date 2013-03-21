@@ -33,9 +33,9 @@ function grabFavicon($url, $feedHash){
 
     if(!file_exists($file) && in_array('curl', get_loaded_extensions()) && Session::isLogged()){
         $ch = curl_init ($url);
-        curl_setopt($ch, CURLOPT_HEADER, 0);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-        curl_setopt($ch, CURLOPT_BINARYTRANSFER,1);
+        curl_setopt($ch, CURLOPT_HEADER, false);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_BINARYTRANSFER, true);
         $raw = curl_exec($ch);
         if (curl_getinfo($ch, CURLINFO_HTTP_CODE) == 200) {
             $fp = fopen($file, 'x');
@@ -60,6 +60,8 @@ class FeedConf
     public $login = '';
 
     public $hash = '';
+
+    public $disableSessionProtection = false;
 
     public $salt = '';
 
@@ -88,7 +90,7 @@ class FeedConf
     public $autofocus = true;
 
     public $addFavicon = false;
-
+	
     public $public = false;
 
     public $version;
@@ -118,8 +120,8 @@ class FeedConf
 
     public $pagingItem = 1;
     public $pagingPage = 2;
-    public $pagingByPage = 4;
-	public $pagingRead = 2;
+    public $pagingByPage = 3;
+    public $pagingMarkAs = 4;
 
     public function __construct($configFile, $version)
     {
@@ -132,6 +134,8 @@ class FeedConf
         } else {
             $this->_install();
         }
+
+        Session::$disableSessionProtection = $this->disableSessionProtection;
 
         if ($this->addFavicon) {
             /* favicon dir */
@@ -375,6 +379,11 @@ class FeedConf
         return $currentPage;
     }
 
+    public function setDisableSessionProtection($disableSessionProtection)
+    {
+        $this->disableSessionProtection = $disableSessionProtection;
+    }
+
     public function setLogin($login)
     {
         $this->login = $login;
@@ -513,8 +522,8 @@ class FeedConf
         if ($this->pagingByPage != 0) {
             $paging['pagingByPage'] = $this->pagingByPage;
         }
-        if ($this->pagingRead != 0) {
-            $paging['pagingRead'] = $this->pagingRead;
+        if ($this->pagingMarkAs != 0) {
+            $paging['pagingMarkAs'] = $this->pagingMarkAs;
         }
 
         asort($paging);
@@ -587,10 +596,11 @@ class FeedConf
         $this->pagingByPage = $pagingByPage;
     }
 	
-	public function setPagingRead($pagingRead)
-	{
-		$this->pagingRead = $pagingRead;
-	}
+    public function setPagingMarkAs($pagingMarkAs)
+    {
+
+        $this->pagingMarkAs = $pagingMarkAs;
+    }
 
     public function write()
     {
@@ -600,7 +610,8 @@ class FeedConf
                       'autohide', 'autofocus', 'listFeeds', 'autoUpdate', 'menuView',
                       'menuListFeeds', 'menuFilter', 'menuOrder', 'menuUpdate',
                       'menuRead', 'menuUnread', 'menuEdit', 'menuAdd', 'menuHelp',
-                      'pagingItem', 'pagingPage', 'pagingByPage', 'pagingRead', 'addFavicon');
+                      'pagingItem', 'pagingPage', 'pagingByPage', 'addFavicon',
+                      'pagingMarkAs', 'disableSessionProtection');
         $out = '<?php';
         $out .= "\n";
 
@@ -813,6 +824,9 @@ dl {
   opacity: 0.4;
 }
 
+.autohide-feed,.autohide-folder {
+  display: none;
+}
 
 #main-container {
   float: right;
@@ -1079,6 +1093,7 @@ dl {
         &nbsp;
         &nbsp;
       </a>
+
       <?php if (isset($currentHashView)) { ?>
       <span class="brand">
         <?php echo $currentHashView ?>
@@ -1259,9 +1274,18 @@ dl {
                     <label class="control-label" for="redirector">Feed reader redirector (only for links, media are not considered, <strong>item content is anonymize only with javascript</strong>)</label>
                     <div class="controls">
                       <input type="text" id="redirector" name="redirector" value="<?php echo $kfcredirector; ?>">
-                      <span class="help-block">(e.g. http://anonym.to/? will mask the HTTP_REFERER)</span>
+                      <span class="help-block"><strong>http://anonym.to/?</strong> will mask the HTTP_REFERER, you can also use <strong>noreferrer</strong> to use HTML5 property</span>
                     </div>
                   </div>
+
+                  <div class="control-group">
+                    <label class="control-label" for="disablesessionprotection">Session protection</label>
+                    <div class="controls">
+                      <label><input type="checkbox" id="disablesessionprotection" name="disableSessionProtection"<?php echo ($kfcdisablesessionprotection ? ' checked="checked"' : ''); ?>>Disable session cookie hijacking protection</label>
+                      <span class="help-block">Check this if you get disconnected often or if your IP address changes often.</span>
+                    </div>
+                  </div>
+
                   <div class="control-group">
                     <div class="controls">
                       <input class="btn" type="submit" name="cancel" value="Cancel"/>
@@ -1353,7 +1377,7 @@ dl {
                       </label>
                       <label for="addfavicon">
                         <input type="radio" id="addfavicon" name="addFavicon" value="1" <?php echo ($kfcaddfavicon ? 'checked="checked"' : ''); ?>/>
-                        Add favicon next to feed on list of feeds<br><strong>Warning: It depends on http://getfavicon.appspot.com/ <?php if (in_array('curl', get_loaded_extensions())) { echo 'but it will cache favicon on your server'; } ?></strong>                                                Add favicon next to feed on list of feeds<br><strong>Warning: It depends on http://getfavicon.appspot.com/</strong>
+                        Add favicon next to feed on list of feeds<br><strong>Warning: It depends on http://getfavicon.appspot.com/ <?php if (in_array('curl', get_loaded_extensions())) { echo 'but it will cache favicon on your server'; } ?></strong>
                       </label>
                     </div>
                   </div>
@@ -1482,11 +1506,11 @@ dl {
                       <span class="help-block">If you want to modify number of items by page</span>
                     </div>
                   </div>
-				  <div class="control-group">
-                    <label class="control-label" for="pagingRead">button read</label>
+                  <div class="control-group">
+                    <label class="control-label" for="pagingMarkAs">Mark as read</label>
                     <div class="controls">
-                      <input type="text" id="pagingRead" name="pagingRead" value="<?php echo empty($kfcpaging['pagingRead'])?'0':$kfcpaging['pagingRead']; ?>">
-                      <span class="help-block">If you want to have a button to read all current</span>
+                      <input type="text" id="pagingMarkAs" name="pagingMarkAs" value="<?php echo empty($kfcpaging['pagingMarkAs'])?'0':$kfcpaging['pagingMarkAs']; ?>">
+                      <span class="help-block">If you add a mark as read button into paging</span>
                     </div>
                   </div>				  
                   <div class="control-group">
@@ -1583,6 +1607,10 @@ dl {
                 <dt>'s'</dt>
                 <dd>'S'hare current item (go in <a href="?config" title="configuration">configuration</a> to set up you link)</dd>
               </dl>
+              <dl class="dl-horizontal">
+                <dt>'a'</dt>
+                <dd>Mark 'a'll items, 'a'll items from current feed or 'a'll items from current folder as read</dd>
+              </dl>
               <h3>Menu navigation</h3>
               <dl class="dl-horizontal">
                 <dt>'h'</dt>
@@ -1611,6 +1639,20 @@ dl {
               <dl class="dl-horizontal">
                 <dt>'?' or 'F1'</dt>
                 <dd>Go to Help page (actually it's shortcut to go to this page)</dd>
+              </dl>
+            </div>
+
+            <div id="section">
+              <h2>Check configuration</h2>
+              <dl class="dl-horizontal">
+                <dt>open_ssl</dt>
+                <dd>
+                  <?php if (extension_loaded('openssl')) { ?>
+                  <span class="text-success">You should be able to load https:// rss links.</span>
+                  <?php } else { ?>
+                  <span class="text-error">You may have problems using https:// rss links.</span>
+                  <?php } ?>
+                </dd>
               </dl>
             </div>
           </div>
@@ -2029,24 +2071,26 @@ dl {
         }
         ?>
         
-        <?php if (!$autohide or ($autohide and $feed['nbUnread']!== 0)) { ?>
-        <li id="<?php echo 'feed-'.$feedHash; ?>" class="feed<?php if ($feed['nbUnread']!== 0) echo ' has-unread'?>">
-        <li id="<?php echo 'feed-'.$feedHash; ?>" class="feed<?php if ($feed['nbUnread']!== 0) echo ' has-unread'?>">
+        <li id="<?php echo 'feed-'.$feedHash; ?>" class="feed<?php if ($feed['nbUnread']!== 0) echo ' has-unread'?><?php if ($autohide and $feed['nbUnread']== 0) { echo ' autohide-feed';} ?>">
           <?php if ($addFavicon) { ?>
           <img src="<?php echo grabFavicon($feed['htmlUrl'], $feedHash); ?>" height="16px" width="16px" title="favicon" alt="favicon"/>
           <?php } ?>
 <a class="mark-as" href="<?php echo $query.'read='.$feedHash; ?>"><span class="label"><?php echo $feed['nbUnread']; ?></span></a><a class="feed<?php echo (isset($feed['error'])?' text-error':''); ?>" href="<?php echo '?currentHash='.$feedHash; ?>" title="<?php echo $atitle; ?>"><?php echo htmlspecialchars($feed['title']); ?></a>
            
         </li>
-        <?php } ?>
 
         <?php
            }
            foreach ($feedsView['folders'] as $hashFolder => $folder) {
         $isOpen = $folder['isOpen'];
+		if($currentHash==$hashFolder){
+			$classSelect = 'folderSelected';
+		}else{
+			$classSelect = '';
+		}
         ?>
-        
-        <li id="folder-<?php echo $hashFolder; ?>" class="folder">
+		
+        <li id="folder-<?php echo $hashFolder; ?>" class="folder <?php echo $classSelect; ?><?php if ($autohide and $folder['nbUnread']== 0) { echo ' autohide-folder';} ?>">
           <h5>
             <a class="mark-as" href="<?php echo $query.'read='.$hashFolder; ?>"><span class="label"><?php echo $folder['nbUnread']; ?></span></a>
             <a class="folder-toggle" href="<?php echo $query.'toggleFolder='.$hashFolder; ?>" data-toggle="collapse" data-target="#folder-ul-<?php echo $hashFolder; ?>">
@@ -2068,17 +2112,22 @@ dl {
             if (isset($feed['error'])) {
             $atitle = $feed['error'];
             }
+			
+			if($currentHash==$feedHash){
+				$classFeedSelect = 'feedSelected';
+			}else{
+				$classFeedSelect = '';
+			}
+			
             ?>
-            <?php if (!$autohide or ($autohide and $feed['nbUnread']!== 0)) { ?>
 
-            <li id="folder-<?php echo $hashFolder; ?>-feed-<?php echo $feedHash; ?>" class="feed<?php if ($feed['nbUnread']!== 0) echo ' has-unread'?>">
+            <li id="folder-<?php echo $hashFolder; ?>-feed-<?php echo $feedHash; ?>" class="feed<?php if ($feed['nbUnread']!== 0) echo ' has-unread'?><?php echo ' '.$classFeedSelect;?><?php if ($autohide and $feed['nbUnread']== 0) { echo ' autohide-feed';} ?>">
               
               <?php if ($addFavicon) { ?>
               <img src="<?php echo grabFavicon($feed['htmlUrl'], $feedHash); ?>" height="16px" width="16px" title="favicon" alt="favicon"/>
               <?php } ?>
               <a class="mark-as" href="<?php echo $query.'read='.$feedHash; ?>"><span class="label"><?php echo $feed['nbUnread']; ?></span></a><a class="feed<?php echo (isset($feed['error'])?' text-error':''); ?>" href="<?php echo '?currentHash='.$feedHash; ?>" title="<?php echo $atitle; ?>"><?php echo htmlspecialchars($feed['title']); ?></a>
             </li>
-            <?php } ?>
             <?php } ?>
           </ul>
         </li>
@@ -2128,7 +2177,7 @@ dl {
           <?php } else { ?>
           <a class="item-mark-as" href="<?php echo $query.'read='.$itemHash; ?>"><span class="label">read</span></a>
           <?php } ?>
-          <a target="_blank" class="item-link" href="<?php echo $redirector.$item['link']; ?>">
+          <a target="_blank"<?php echo ($redirector==='noreferrer'?' rel="noreferrer"':''); ?> class="item-link" href="<?php echo ($redirector!='noreferrer'?$redirector:'').$item['link']; ?>">
             <?php echo $item['title']; ?>
           </a>
         </span>
@@ -2150,11 +2199,11 @@ dl {
         <?php } else { ?>
         <a class="item-mark-as" href="<?php echo $query.'read='.$itemHash; ?>"><span class="label item-label-mark-as">read</span></a>
         <?php } ?>
-        <a target="_blank" class="item-link" href="<?php echo $redirector.$item['link']; ?>"><?php echo $item['title']; ?></a>
+        <a target="_blank"<?php echo ($redirector==='noreferrer'?' rel="noreferrer"':''); ?> class="item-link" href="<?php echo ($redirector!='noreferrer'?$redirector:'').$item['link']; ?>"><?php echo $item['title']; ?></a>
         <div class="item-info-end">
-          from <a class="item-via" href="<?php echo $redirector.$item['via']; ?>"><?php echo $item['author']; ?></a>
+          from <a class="item-via"<?php echo ($redirector==='noreferrer'?' rel="noreferrer"':''); ?> href="<?php echo ($redirector!='noreferrer'?$redirector:'').$item['via']; ?>"><?php echo $item['author']; ?></a>
           <?php echo $item['time']['expanded']; ?>
-          <a class="item-xml" href="<?php echo $redirector.$item['xmlUrl']; ?>">
+          <a class="item-xml"<?php echo ($redirector==='noreferrer'?' rel="noreferrer"':''); ?> href="<?php echo ($redirector!='noreferrer'?$redirector:'').$item['xmlUrl']; ?>">
             <span class="ico">
               <span class="ico-feed-dot"></span>
               <span class="ico-feed-circle-1"></span>
@@ -2202,9 +2251,7 @@ dl {
   <?php case 'pagingRead': ?>
    <li>
     <div class="btn-group">
-      <a href="<?php echo $query.'read='.$currentHash; ?>" class="btn btn-info read-item" title="Mark <?php echo $currentHashType; ?> as read">Mark as read</a>
-
-
+		<a class="btn btn-info" href="<?php echo $query.'read='.$currentHash; ?>">Mark as read</a>
     </div>
   </li>
   <?php break; ?>
@@ -2529,7 +2576,11 @@ dl {
       for (var i = 0; i < a_to_anon.length; i++) {
         domain = a_to_anon[i].href.replace('http://','').replace('https://','').split(/[/?#]/)[0];
         if (domain !== window.location.host) {
-          a_to_anon[i].href = redirector+a_to_anon[i].href;
+          if (redirector !== 'noreferrer') {
+            a_to_anon[i].href = redirector+a_to_anon[i].href;
+          } else {
+            a_to_anon[i].setAttribute('rel', 'noreferrer');
+          }
         }
       }
     }
@@ -2583,7 +2634,10 @@ dl {
    element = document.getElementById('item-div-'+itemHash);
     if (element.childNodes.length > 1) {
       title = getTitleItem(itemHash);
-      url = getUrlItem(itemHash).replace(redirector,'');
+      url = getUrlItem(itemHash);
+      if (redirector != 'noreferrer') {
+        url = url.replace(redirector,'');
+      }
       via = getViaItem(itemHash);
       domainUrl = url.replace('http://','').replace('https://','').split(/[/?#]/)[0];
       domainVia = via.replace('http://','').replace('https://','').split(/[/?#]/)[0];
@@ -2999,7 +3053,7 @@ dl {
       markAs = 'unread';
     }
 
-    li.innerHTML = '<a id="item-toggle-'+ item['itemHash'] +'" class="item-toggle-plus" href="' + '?currentHash=' + currentHash + '&current=' + item['itemHash'] +'&open" data-toggle="collapse" data-target="#item-div-'+ item['itemHash'] + '">' +
+    li.innerHTML = '<a id="item-toggle-'+ item['itemHash'] +'" class="item-toggle item-toggle-plus" href="' + '?currentHash=' + currentHash + '&current=' + item['itemHash'] +'&open" data-toggle="collapse" data-target="#item-div-'+ item['itemHash'] + '"> ' +
       item['time']['list'] +
       '<span class="ico">' +
       '<span class="ico-circle"></span>' +
@@ -3021,7 +3075,9 @@ dl {
       '</a> ' +
       '</span>' +
       '<span class="item-description">' +
+      '<a class="item-toggle muted" href="' + '?currentHash=' + currentHash + '&current=' + item['itemHash'] + '&open" data-toggle="collapse" data-target="#item-div-'+ item['itemHash'] + '">' +
       item['description'] +
+      '</a> ' +
       '</span>' +
       '</dd>' +
       '</dl>';
@@ -3472,6 +3528,11 @@ dl {
       switch(code) {
         case 32: // 'space'
         toggleCurrentItem();
+        break;
+        case 65: // 'A'
+        if (window.confirm('Mark all current as read ?')) {
+          window.location.href = '?read=' + currentHash;
+        }
         break;
         case 67: // 'C'
         window.location.href = '?config';
@@ -4495,17 +4556,33 @@ class Feed
                     } else {
                         $tag = $item->getElementsByTagName($list[$i]);
                         // wrong detection : e.g. media:content for content
-                        if ($tag->length != 0 && $tag->item(0)->tagName != $list[$i]) {
-                            $tag = new DOMNodeList;
+                        if ($tag->length != 0) {
+                            for ($j = $tag->length; --$j >= 0;) {
+                                $elt = &$tag->item($j);
+                                if ($tag->item($j)->tagName != $list[$i]) {
+                                    $elt->parentNode->removeChild($elt);
+                                }
+                            }
+                        }
                         }
                     }
                     if ($tag->length != 0) {
                         // we find a correspondence for the current format
                         // select first item (item(0)), (may not work)
                         // stop to search for another one
-                        if ($format == 'link') {
-                            $tmpItem[$format]
-                                = $tag->item(0)->getAttribute('href');
+						if ($format == 'link') {
+                            $tmpItem[$format] = '';
+                            for ($j = 0; $j < $tag->length; $j++) {
+                                if ($tag->item($j)->hasAttribute('rel') && $tag->item($j)->getAttribute('rel') == 'alternate') {
+                                    $tmpItem[$format]
+                                        = $tag->item($j)->getAttribute('href');
+                                    $j = $tag->length;
+                                }
+                            }
+                            if ($tmpItem[$format] == '') {
+                                $tmpItem[$format]
+                                    = $tag->item(0)->getAttribute('href');
+                            }
                         }
                         if (empty($tmpItem[$format])) {
                             $tmpItem[$format] = $tag->item(0)->textContent;
@@ -4635,6 +4712,58 @@ class Feed
         return $formats;
     }
 
+    public function loadUrl($url, $opts = array()){
+        $ch = curl_init($url);
+        if (!empty($opts)) {
+            curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, $opts['http']['timeout']);
+            curl_setopt($ch, CURLOPT_TIMEOUT, $opts['http']['timeout']);
+            curl_setopt($ch, CURLOPT_USERAGENT, $opts['http']['user_agent']);
+        }
+        curl_setopt($ch, CURLOPT_ENCODING, true);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_BINARYTRANSFER, true);
+        curl_setopt($ch, CURLOPT_URL, $url);
+
+        $output = $this->curl_exec_follow($ch);
+
+        curl_close($ch);
+
+        return $output;
+    }
+ 
+    public function curl_exec_follow(&$ch, $redirects = 20, $curloptHeader = false) {
+        if ((!ini_get('open_basedir') && !ini_get('safe_mode')) || $redirects < 1) {
+            curl_setopt($ch, CURLOPT_HEADER, $curloptHeader);
+            curl_setopt($ch, CURLOPT_FOLLOWLOCATION, $redirects > 0);
+            curl_setopt($ch, CURLOPT_MAXREDIRS, $redirects);
+            return curl_exec($ch);
+        } else {
+            curl_setopt($ch, CURLOPT_FOLLOWLOCATION, false);
+            curl_setopt($ch, CURLOPT_HEADER, true);
+            curl_setopt($ch, CURLOPT_FORBID_REUSE, false);
+
+            do {
+                $data = curl_exec($ch);
+                if (curl_errno($ch))
+                    break;
+                $code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+                if ($code != 301 && $code != 302 && $code!=303)
+                    break;
+                $header_start = strpos($data, "\r\n")+2;
+                $headers = substr($data, $header_start, strpos($data, "\r\n\r\n", $header_start)+2-$header_start);
+                if (!preg_match("!\r\n(?:Location|location|URI): *(.*?) *\r\n!", $headers, $matches))
+                    break;
+                curl_setopt($ch, CURLOPT_URL, $matches[1]);
+            } while (--$redirects);
+            if (!$redirects)
+                trigger_error('Too many redirects. When following redirects, libcurl hit the maximum amount.', E_USER_WARNING);
+            if (!$curloptHeader)
+                $data = substr($data, strpos($data, "\r\n\r\n")+4);
+
+            return $data;
+        }
+    }
+
  public function loadXml($xmlUrl)
     {
         // hide warning/error
@@ -4648,27 +4777,18 @@ class Feed
                 'user_agent' => 'KrISS feed agent '.$this->kfc->version.' by Tontof.net http://github.com/tontof/kriss_feed',
                 )
             );
-        $document = false;
+        $document = new DOMDocument();
 
         if (in_array('curl', get_loaded_extensions())) {
-            $ch = curl_init();
-            curl_setopt($ch, CURLOPT_URL, $xmlUrl);
-            curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-            curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
-            curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, $opts['http']['timeout']);
-            curl_setopt($ch, CURLOPT_TIMEOUT, $opts['http']['timeout']);
-            curl_setopt($ch, CURLOPT_USERAGENT, $opts['http']['user_agent']);
-            $output = curl_exec($ch);
-            curl_close($ch);
-
-            $document = DOMDocument::loadXML($output);
+            $output = $this->loadUrl($xmlUrl, $opts);
+            $document->loadXML($output);
         } else {
             // try using libxml
             $context = stream_context_create($opts);
             libxml_set_streams_context($context);
 
             // request a file through HTTP
-            $document = DOMDocument::load($xmlUrl);
+            $document->load($xmlUrl);
         }
         // show back warning/error
         restore_error_handler();
@@ -5720,6 +5840,8 @@ class Session
 {
     public static $inactivityTimeout = 3600;
 
+    public static $disableSessionProtection = false;
+
     private static $_instance;
 
     private function __construct()
@@ -5751,15 +5873,12 @@ class Session
         }
     }
 
-    private static function _allInfo()
+    private static function _allIPs()
     {
-        $infos = $_SERVER["REMOTE_ADDR"];
-        $infos.= isset($_SERVER['HTTP_X_FORWARDED_FOR']) ? '_'.$_SERVER['HTTP_X_FORWARDED_FOR'] : '';
-        $infos.= isset($_SERVER['HTTP_CLIENT_IP']) ? '_'.$_SERVER['HTTP_CLIENT_IP'] : '';
-        $infos.= isset($_SERVER['HTTP_USER_AGENT']) ? '_'.$_SERVER['HTTP_USER_AGENT'] : '';
-        $infos.= isset($_SERVER['HTTP_ACCEPT_LANGUAGE']) ? '_'.$_SERVER['HTTP_ACCEPT_LANGUAGE'] : '';
-
-        return sha1($infos);
+        $ip = $_SERVER["REMOTE_ADDR"];
+        $ip.= isset($_SERVER['HTTP_X_FORWARDED_FOR']) ? '_'.$_SERVER['HTTP_X_FORWARDED_FOR'] : '';
+        $ip.= isset($_SERVER['HTTP_CLIENT_IP']) ? '_'.$_SERVER['HTTP_CLIENT_IP'] : '';
+        return $ip;
     }
 
     public static function login (
@@ -5772,7 +5891,7 @@ class Session
         if ($login == $loginTest && $password==$passwordTest) {
             // Generate unique random number to sign forms (HMAC)
             $_SESSION['uid'] = sha1(uniqid('', true).'_'.mt_rand());
-            $_SESSION['info']=Session::_allInfo();
+            $_SESSION['ip'] = Session::_allIPs();
             $_SESSION['username']=$login;
             // Set session expiration.
             $_SESSION['expires_on']=time()+Session::$inactivityTimeout;
@@ -5790,13 +5909,14 @@ class Session
 
     public static function logout()
     {
-        unset($_SESSION['uid'], $_SESSION['info'], $_SESSION['expires_on']);
+        unset($_SESSION['uid'], $_SESSION['ip'], $_SESSION['expires_on']);
     }
 
     public static function isLogged()
     {
         if (!isset ($_SESSION['uid'])
-            || $_SESSION['info']!=Session::_allInfo()
+            || (Session::$disableSessionProtection == false
+                && $_SESSION['ip']!=Session::_allIPs())
             || time()>=$_SESSION['expires_on']) {
             Session::logout();
 
@@ -5844,6 +5964,7 @@ if (!empty($_POST)) {
         die('Wrong token.');
     }
 }
+unset($_SESSION['tokens']);
 
 $pb = new PageBuilder('FeedPage');
 $kfp = new FeedPage(STYLE_FILE);
@@ -5865,7 +5986,7 @@ $currentHash = $kfc->getCurrentHash();
 // Query
 $query = '?';
 if (!empty($currentHash) and $currentHash !== 'all') {
-    $query = '?currentHash='.$currentHash.'&';
+    $query = '?currentHash='.$currentHash.'&amp;';
 }
 
 $pb->assign('view', $view);
@@ -6029,7 +6150,7 @@ if (isset($_GET['login'])) {
     default:
         break;
     }
-    if (isset($_GET['cron']) || isset($argv)) {
+    if (isset($_GET['cron']) || isset($argv) && count($argv) >= 3) {
         $kf->updateFeedsHash($feedsHash, $forceUpdate);
     } else {
         $pb->assign('kf', $kf);
@@ -6041,6 +6162,11 @@ if (isset($_GET['login'])) {
 } elseif (isset($_GET['config']) && Session::isLogged()) {
     // Config
     if (isset($_POST['save'])) {
+        if (isset($_POST['disableSessionProtection'])) {
+            $_POST['disableSessionProtection'] = '1';
+        } else {
+            $_POST['disableSessionProtection'] = '0';
+        }
         $kfc->hydrate($_POST);
         MyTool::redirect();
     } elseif (isset($_POST['cancel'])) {
@@ -6066,6 +6192,7 @@ if (isset($_GET['login'])) {
         $pb->assign('kfcautofocus', (int) $kfc->autofocus);
         $pb->assign('kfcaddfavicon', (int) $kfc->addFavicon);
 
+        $pb->assign('kfcdisablesessionprotection', (int) $kfc->disableSessionProtection);
         $pb->assign('kfcmenu', $menu);
         $pb->assign('kfcpaging', $paging);
 
@@ -6228,7 +6355,7 @@ $type = $kf->hashType($currentHash);
             $kf->removeFeed($hash);
             $kf->writeData();
 
-            MyTool::redirect();
+            MyTool::redirect('?');
         } elseif (isset($_POST['cancel'])) {
             MyTool::redirect();
         } else {
@@ -6442,7 +6569,7 @@ $type = $kf->hashType($currentHash);
             $hashView = 'Folder ('.$kf->getFolderTitle($currentHash).'): <span id="nb-unread">'.$unread.'</span><span class="hidden-phone"> unread items</span>';
             break;
         default:
-            $hashView = '<span id="nb-unread">'.$unread.'</span><span> unread items';
+            $hashView = '<span id="nb-unread">'.$unread.'</span><span class="hidden-phone"> unread items</span>';
             break;
         }
 
