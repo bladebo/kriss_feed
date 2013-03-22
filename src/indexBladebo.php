@@ -11,6 +11,8 @@ define('DATA_FILE', DATA_DIR.'/data.php');
 define('CONFIG_FILE', DATA_DIR.'/config.php');
 define('STYLE_FILE', 'style.css');
 
+define('BAN_FILE', DATA_DIR.'/ipbans.php');
+
 define('FEED_VERSION', 5);
 
 define('PHPPREFIX', '<?php /* '); // Prefix to encapsulate data in php code.
@@ -22,9 +24,35 @@ define('ERROR_NO_ERROR', 0);
 define('ERROR_NO_XML', 1);
 define('ERROR_ITEMS_MISSED', 2);
 define('ERROR_LAST_UPDATE', 3);
+define('ERROR_UNKNOWN', 4);
 
 // fix some warning
 date_default_timezone_set('Europe/Paris'); 
+
+if (!is_dir(DATA_DIR)) {
+    if (!@mkdir(DATA_DIR, 0755)) {
+        echo '
+<script>
+ alert("Error: can not create '.DATA_DIR.' directory, check permissions");
+ document.location=window.location.href;
+</script>';
+        exit();
+    }
+    @chmod(DATA_DIR, 0755);
+    if (!is_file(DATA_DIR.'/.htaccess')) {
+        if (!@file_put_contents(
+                DATA_DIR.'/.htaccess',
+                "Allow from none\nDeny from all\n"
+                )) {
+            echo '
+<script>
+ alert("Can not protect '.DATA_DIR.'");
+ document.location=window.location.href;
+</script>';
+            exit();
+        }
+    }
+}
 
 /* function grabFavicon */
 function grabFavicon($url, $feedHash){
@@ -198,31 +226,6 @@ class FeedConf
             $this->setLogin($_POST['setlogin']);
             $this->setHash($_POST['setpassword']);
 
-            if (!is_dir(DATA_DIR)) {
-                if (!@mkdir(DATA_DIR, 0755)) {
-                    echo '
-<script>
- alert("Error: can not create '.DATA_DIR.' directory, check permissions");
- document.location=window.location.href;
-</script>';
-                    exit();
-                }
-                @chmod(DATA_DIR, 0755);
-                if (!is_file(DATA_DIR.'/.htaccess')) {
-                    if (!@file_put_contents(
-                        DATA_DIR.'/.htaccess',
-                        "Allow from none\nDeny from all\n"
-                    )) {
-                        echo '
-<script>
- alert("Can not protect '.DATA_DIR.'");
- document.location=window.location.href;
-</script>';
-                        exit();
-                    }
-                }
-            }
-
             if ($this->write()) {
                 echo '
 <script>
@@ -352,7 +355,7 @@ class FeedConf
     {
         $currentHash = $this->currentHash;
         if (isset($_GET['currentHash'])) {
-            $currentHash = substr(trim($_GET['currentHash'], '/'), 0, 6);
+            $currentHash = preg_replace('/[^a-zA-Z0-9-_@]/', '', substr(trim($_GET['currentHash'], '/'), 0, 6));
         }
 
         if (empty($currentHash)) {
@@ -598,7 +601,6 @@ class FeedConf
 	
     public function setPagingMarkAs($pagingMarkAs)
     {
-
         $this->pagingMarkAs = $pagingMarkAs;
     }
 
@@ -808,6 +810,10 @@ h5.folder {
 
 .current {
   border-color: red !important;
+}
+
+.current .item-title {
+  font-weight: bold;
 }
 
 dl {
@@ -1527,7 +1533,6 @@ dl {
                   To update every 15 minutes
                   <code>*/15 * * * * wget "<?php echo MyTool::getUrl().'?update&cron='.$kfccron; ?>" -O /tmp/kf.cron</code><br>
                   To update every hour
-
                   <code>0 * * * * wget "<?php echo MyTool::getUrl().'?update&cron='.$kfccron; ?>" -O /tmp/kf.cron</code><br>
                   If you can not use wget, you may try php command line :
                   <code>0 * * * * php -f <?php echo $_SERVER["SCRIPT_FILENAME"].' update '.$kfccron; ?> > /tmp/kf.cron</code>
@@ -1979,6 +1984,7 @@ dl {
                 <?php if (!empty($referer)) { ?>
                 <a class="btn" href="<?php echo htmlspecialchars($referer); ?>">Go back</a>
                 <?php } ?>
+				<a class="btn" href="<?php echo $query."update=".$currentHash."&force"; ?>">Force update</a>
               </div>
             </div>
           </div>
@@ -2200,6 +2206,8 @@ dl {
         <a class="item-mark-as" href="<?php echo $query.'read='.$itemHash; ?>"><span class="label item-label-mark-as">read</span></a>
         <?php } ?>
         <a target="_blank"<?php echo ($redirector==='noreferrer'?' rel="noreferrer"':''); ?> class="item-link" href="<?php echo ($redirector!='noreferrer'?$redirector:'').$item['link']; ?>"><?php echo $item['title']; ?></a>
+      </div>
+      <div class="clear"></div>
         <div class="item-info-end">
           from <a class="item-via"<?php echo ($redirector==='noreferrer'?' rel="noreferrer"':''); ?> href="<?php echo ($redirector!='noreferrer'?$redirector:'').$item['via']; ?>"><?php echo $item['author']; ?></a>
           <?php echo $item['time']['expanded']; ?>
@@ -2211,11 +2219,10 @@ dl {
             </span>
           </a>
         </div>
-      </div>
       <div class="clear"></div>
-      <div class="item-content">
+      <div class="item-content"><article>
         <?php echo $item['content']; ?>
-      </div>
+      </article></div>
       <div class="item-info-end">
         <a class="item-shaarli" href="<?php echo $query.'shaarli='.$itemHash; ?>"><span class="label label-expanded">share</span></a>
         <?php if ($item['read'] == 1) { ?>
@@ -2248,7 +2255,7 @@ dl {
     </div>
   </li>
   <?php break; ?>
-  <?php case 'pagingRead': ?>
+  <?php case 'pagingMarkAs': ?>
    <li>
     <div class="btn-group">
 		<a class="btn btn-info" href="<?php echo $query.'read='.$currentHash; ?>">Mark as read</a>
@@ -2306,20 +2313,17 @@ dl {
 			  <div id="paging-up">
 				<?php if (!empty($paging)) {FeedPage::pagingTpl();} ?>
 			  </div>
-         <!-- <div id="paging-down">
-            <?php//if (!empty($paging)) {FeedPage::pagingTpl();} ?>
-          </div>-->
 			<div class="row-fluid not-so-full-height">
 				<div id="minor-container" class="span3 full-height">
 				  <?php FeedPage::listFeedsTpl(); ?>
 				</div>
 				<div id="list-container" class="span9 full-height">
 					<?php FeedPage::listItemsTpl(); ?>
-
-
 				</div>
 			</div>
-
+          <div id="paging-down">
+            <?php if (!empty($paging)) {FeedPage::pagingTpl();} ?>
+          </div>
 
 		</div>
         <?php } else { ?>
@@ -2628,6 +2632,15 @@ dl {
     }
   }
 
+  function htmlspecialchars_decode(string) {
+    return string
+           .replace(/&lt;/g, '<')
+           .replace(/&gt;/g, '>')
+           .replace(/&quot;/g, '"')
+           .replace(/&amp;/g, '&')
+           .replace(/&#0*39;/g, "'");
+  }
+
   function shaarliItem(itemHash) {
     var domainUrl, url, domainVia, via, title, sel, element;
 
@@ -2653,10 +2666,10 @@ dl {
 
       window.open(
         shaarli
-        .replace('${url}', encodeURIComponent(url))
-        .replace('${title}', encodeURIComponent(title))
-        .replace('${via}', encodeURIComponent(via))
-        .replace('${sel}', encodeURIComponent(sel)),
+        .replace('${url}', encodeURIComponent(htmlspecialchars_decode(url)))
+        .replace('${title}', encodeURIComponent(htmlspecialchars_decode(title)))
+        .replace('${via}', encodeURIComponent(htmlspecialchars_decode(via)))
+        .replace('${sel}', encodeURIComponent(htmlspecialchars_decode(sel))),
         '_blank',
         'height=390, width=600, menubar=no, toolbar=no, scrollbars=no, status=no'
       );
@@ -3018,6 +3031,7 @@ dl {
       item['title'] +
       '</a>' +
       '</div>' +
+      '<div class="clear"></div>' +
       '<div class="item-info-end">' +
       'from <a class="item-via" href="' + item['via'] + '">' +
       item['author'] +
@@ -3032,9 +3046,9 @@ dl {
       '</a>' +
       '</div>' +
       '<div class="clear"></div>' +
-      '<div class="item-content">' +
+      '<div class="item-content"><article>' +
       item['content'] +
-      '</div>' +
+      '</article></div>' +
       '<div class="item-info-end">' +
       '<a class="item-shaarli" href="' + '?currentHash=' + currentHash + '&shaarli=' + item['itemHash'] + '"><span class="label label-expanded">share</span></a> ' +
       '<a class="item-mark-as" href="' + '?currentHash=' + currentHash + '&' + markAs + '=' + item['itemHash'] + '"><span class="label label-expanded">' + markAs + '</span></a>' +
@@ -3525,6 +3539,8 @@ dl {
       if (!e) e = window.event;
       if (e.keyCode) code = e.keyCode;
       else if (e.which) code = e.which;
+
+    if (!e.ctrlKey && !e.altKey) {
       switch(code) {
         case 32: // 'space'
         toggleCurrentItem();
@@ -3594,7 +3610,7 @@ dl {
         toggleCurrentItem();
         break;
        case 85: // 'U'
-        window.location.href = (currentHash==''?'?update':'?update='+currentHash);
+        window.location.href = (currentHash==''?'?update':'?currentHash=' + currentHash + '&update='+currentHash);
         break;
         case 86: // 'V'
         if (view == 'list') {
@@ -3611,6 +3627,7 @@ dl {
         default:
         break;
       }
+    }
     // e.ctrlKey e.altKey e.shiftKey
   }
 
@@ -4087,6 +4104,8 @@ class Feed
     public function getFeed($feedHash)
     {
         if (isset($this->_data['feeds'][$feedHash])) {
+            $this->_data['feeds'][$feedHash]['xmlUrl'] = htmlspecialchars($this->_data['feeds'][$feedHash]['xmlUrl']);
+            $this->_data['feeds'][$feedHash]['htmlUrl'] = htmlspecialchars($this->_data['feeds'][$feedHash]['htmlUrl']);
             return $this->_data['feeds'][$feedHash];
         }
 
@@ -4433,8 +4452,6 @@ class Feed
             }
             if (isset($this->_data['items'][$itemHash])) {
                 $item['read'] = $this->_data['items'][$itemHash][1];
-
-                return $item;
             } else if (isset($this->_data['newItems'][$itemHash])) {
                 $item['read'] = $this->_data['newItems'][$itemHash][1];
 
@@ -4448,12 +4465,17 @@ class Feed
                 } else {
                     $_SESSION['lastNewItemsHash'] = $itemHash;
                 }
-
-                return $item;
             } else {
                 // FIX: data may be corrupted
                 return false;
             }
+            
+            $item['author'] = htmlspecialchars(htmlspecialchars_decode(strip_tags($item['author']), ENT_QUOTES), ENT_NOQUOTES);
+            $item['title'] = htmlspecialchars(htmlspecialchars_decode(strip_tags($item['title']), ENT_QUOTES), ENT_NOQUOTES);
+            $item['link'] = htmlspecialchars($item['link']);
+            $item['via'] = htmlspecialchars($item['via']);
+            
+            return $item;
         }
 
         return false;
@@ -4558,19 +4580,18 @@ class Feed
                         // wrong detection : e.g. media:content for content
                         if ($tag->length != 0) {
                             for ($j = $tag->length; --$j >= 0;) {
-                                $elt = &$tag->item($j);
+                                $elt = $tag->item($j);
                                 if ($tag->item($j)->tagName != $list[$i]) {
                                     $elt->parentNode->removeChild($elt);
                                 }
                             }
-                        }
                         }
                     }
                     if ($tag->length != 0) {
                         // we find a correspondence for the current format
                         // select first item (item(0)), (may not work)
                         // stop to search for another one
-						if ($format == 'link') {
+                        if ($format == 'link') {
                             $tmpItem[$format] = '';
                             for ($j = 0; $j < $tag->length; $j++) {
                                 if ($tag->item($j)->hasAttribute('rel') && $tag->item($j)->getAttribute('rel') == 'alternate') {
@@ -4747,7 +4768,11 @@ class Feed
                 if (curl_errno($ch))
                     break;
                 $code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-                if ($code != 301 && $code != 302 && $code!=303)
+                // 301 Moved Permanently
+                // 302 Found
+                // 303 See Other
+                // 307 Temporary Redirect
+                if ($code != 301 && $code != 302 && $code!=303 && $code!=307)
                     break;
                 $header_start = strpos($data, "\r\n")+2;
                 $headers = substr($data, $header_start, strpos($data, "\r\n\r\n", $header_start)+2-$header_start);
@@ -4764,7 +4789,7 @@ class Feed
         }
     }
 
- public function loadXml($xmlUrl)
+	 public function loadXml($xmlUrl)
     {
         // hide warning/error
         set_error_handler(array('MyTool', 'silence_errors'));
@@ -4807,6 +4832,9 @@ class Feed
             } else {
                 $channel = $this->getChannelFromXml($xml);
                 $items = $this->getItemsFromXml($xml);
+                if (count($items) == 0) {
+                    return false;
+                }
                 foreach (array_keys($items) as $itemHash) {
                     if (empty($items[$itemHash]['via'])) {
                         $items[$itemHash]['via'] = $channel['htmlUrl'];
@@ -4883,6 +4911,7 @@ class Feed
             return 'Items may have been missed since last update';
             break;
         case ERROR_LAST_UPDATE:
+        case ERROR_UNKNOWN:
             return 'Problem with the last update';
             break;
         default:
@@ -4934,6 +4963,8 @@ class Feed
             $rssItems = $this->getItemsFromXml($xml);
             $rssItems = array_slice($rssItems, 0, $this->kfc->maxItems, true);
             $rssItemsHash = array_keys($rssItems);
+
+            if (count($rssItemsHash) !== 0) {
 
             // Look for new items
             foreach ($rssItemsHash as $itemHash) {
@@ -5014,6 +5045,9 @@ class Feed
                 }
             }
             $this->_data['feeds'][$feedHash]['nbUnread'] = $nbUnread;
+            } else {
+                $error = ERROR_UNKNOWN;
+            }
         }
 
         // update feed information
@@ -5463,6 +5497,12 @@ class MyTool
             $rurl = MyTool::getUrl();
         }
 
+        if (substr($rurl, 0, 1) !== '?') {
+            $ref = MyTool::getUrl();
+            if (substr($rurl, 0, strlen($ref)) != $ref) {
+                $rurl = $ref;
+            }
+        }
         header('Location: '.$rurl);
         exit();
     }
@@ -5563,7 +5603,7 @@ class Opml
             }
 
             echo '<script>alert("File '
-                . $filename . ' (' . MyTool::humanBytes($filesize)
+                . htmlspecialchars($filename) . ' (' . MyTool::humanBytes($filesize)
                 . ') was successfully processed: ' . $importCount
                 . ' links imported.");document.location=\'?\';</script>';
 
@@ -5572,7 +5612,7 @@ class Opml
 
             return $kfData;
         } else {
-            echo '<script>alert("File ' . $filename . ' ('
+            echo '<script>alert("File ' . htmlspecialchars($filename) . ' ('
                 . MyTool::humanBytes($filesize) . ') has an unknown'
                 . ' file format. Check encoding, try to remove accents'
                 . ' and try again. Nothing was imported.");'
@@ -5838,14 +5878,26 @@ class PageBuilder
 
 class Session
 {
+    private static $_instance;
+
     public static $inactivityTimeout = 3600;
 
     public static $disableSessionProtection = false;
 
-    private static $_instance;
+    public static $banFile = 'ipbans.php';
+    public static $banAfter = 4;
+    public static $banDuration = 1800;
 
-    private function __construct()
+       private function __construct($banFile)
     {
+        // Check ban configuration
+        self::$banFile = $banFile;
+
+        if (!is_file(self::$banFile)) {
+            file_put_contents(self::$banFile, "<?php\n\$GLOBALS['IPBANS']=".var_export(array('FAILURES'=>array(),'BANS'=>array()),true).";\n?>");
+        }
+        include self::$banFile;
+
         // Force cookie path (but do not change lifetime)
         $cookie=session_get_cookie_params();
         // Default cookie expiration and path.
@@ -5866,11 +5918,55 @@ class Session
         }
     }
 
-    public static function init()
+    public static function init($banFile)
     {
         if (!isset(self::$_instance)) {
-            self::$_instance = new Session();
+            self::$_instance = new Session($banFile);
         }
+    }
+
+    public static function banLoginFailed()
+    {
+        $ip = $_SERVER["REMOTE_ADDR"];
+        $gb = $GLOBALS['IPBANS'];
+
+        if (!isset($gb['FAILURES'][$ip])) {
+            $gb['FAILURES'][$ip] = 0;
+        }
+        $gb['FAILURES'][$ip]++;
+        if ($gb['FAILURES'][$ip] > (self::$banAfter-1)) {
+            $gb['BANS'][$ip]= time() + self::$banDuration;
+        }
+
+        $GLOBALS['IPBANS'] = $gb;
+        file_put_contents(self::$banFile, "<?php\n\$GLOBALS['IPBANS']=".var_export($gb,true).";\n?>");
+    }
+
+    function banLoginOk()
+    {
+        $ip = $_SERVER["REMOTE_ADDR"];
+        $gb = $GLOBALS['IPBANS'];
+        unset($gb['FAILURES'][$ip]); unset($gb['BANS'][$ip]);
+        $GLOBALS['IPBANS'] = $gb;
+        file_put_contents(self::$banFile, "<?php\n\$GLOBALS['IPBANS']=".var_export($gb,true).";\n?>");
+    }
+
+    function banCanLogin()
+    {
+        $ip = $_SERVER["REMOTE_ADDR"];
+        $gb = $GLOBALS['IPBANS'];
+        if (isset($gb['BANS'][$ip])) {
+            // User is banned. Check if the ban has expired:
+            if ($gb['BANS'][$ip] <= time()) {
+                // Ban expired, user can try to login again.
+                unset($gb['FAILURES'][$ip]);
+                unset($gb['BANS'][$ip]);
+                file_put_contents(self::$banFile, "<?php\n\$GLOBALS['IPBANS']=".var_export($gb,true).";\n?>");
+                return true; // Ban has expired, user can login.
+            }
+            return false; // User is banned.
+        }
+        return true; // User is not banned.
     }
 
     private static function _allIPs()
@@ -5878,23 +5974,28 @@ class Session
         $ip = $_SERVER["REMOTE_ADDR"];
         $ip.= isset($_SERVER['HTTP_X_FORWARDED_FOR']) ? '_'.$_SERVER['HTTP_X_FORWARDED_FOR'] : '';
         $ip.= isset($_SERVER['HTTP_CLIENT_IP']) ? '_'.$_SERVER['HTTP_CLIENT_IP'] : '';
+
         return $ip;
     }
 
-    public static function login (
+        public static function login (
         $login,
         $password,
         $loginTest,
         $passwordTest,
         $pValues = array())
     {
+        if (!self::banCanLogin()) {
+            die('I said: NO. You are banned for the moment. Go away.');
+        }
         if ($login == $loginTest && $password==$passwordTest) {
+            self::banLoginOk();
             // Generate unique random number to sign forms (HMAC)
             $_SESSION['uid'] = sha1(uniqid('', true).'_'.mt_rand());
             $_SESSION['ip'] = Session::_allIPs();
-            $_SESSION['username']=$login;
+            $_SESSION['username'] = $login;
             // Set session expiration.
-            $_SESSION['expires_on']=time()+Session::$inactivityTimeout;
+            $_SESSION['expires_on'] = time() + Session::$inactivityTimeout;
 
             foreach ($pValues as $key => $value) {
                 $_SESSION[$key] = $value;
@@ -5902,6 +6003,7 @@ class Session
 
             return true;
         }
+        self::banLoginFailed();
         Session::logout();
 
         return false;
@@ -5930,13 +6032,13 @@ class Session
         return true;
     }
 
-    public static function getToken()
+    public static function getToken($salt = '')
     {
         if (!isset($_SESSION['tokens'])) {
             $_SESSION['tokens']=array();
         }
         // We generate a random string and store it on the server side.
-        $rnd = sha1(uniqid('', true).'_'.mt_rand());
+        $rnd = sha1(uniqid('', true).'_'.mt_rand().$salt);
         $_SESSION['tokens'][$rnd]=1;
 
         return $rnd;
@@ -5957,7 +6059,7 @@ class Session
 // Check if php version is correct
 MyTool::initPHP();
 // Initialize Session
-Session::init();
+Session::init(BAN_FILE);
 // XSRF protection with token
 if (!empty($_POST)) {
     if (!Session::isToken($_POST['token'])) {
@@ -6191,7 +6293,6 @@ if (isset($_GET['login'])) {
         $pb->assign('kfcautohide', (int) $kfc->autohide);
         $pb->assign('kfcautofocus', (int) $kfc->autofocus);
         $pb->assign('kfcaddfavicon', (int) $kfc->addFavicon);
-
         $pb->assign('kfcdisablesessionprotection', (int) $kfc->disableSessionProtection);
         $pb->assign('kfcmenu', $menu);
         $pb->assign('kfcpaging', $paging);
@@ -6308,16 +6409,14 @@ if (isset($_GET['login'])) {
 
     // type : 'feed', 'folder', 'all', 'item'
     $type = $kf->hashType($hash);
-    if ($type === 'item') {
+	if ($type === 'item') {
         MyTool::redirect($query.'current='.$hash);
     } else {
-		$filter = $_SESSION['filter'];
-		if($filter == all){
-			MyTool::redirect($query);
-		}else{
-			MyTool::redirect($query.'currentHash=all');
-		}
-        
+        if ($filter === 'unread' && $read === 1) {
+            MyTool::redirect('?');
+        } else {
+            MyTool::redirect($query);
+        }
     }
 } elseif (isset($_GET['edit']) && Session::isLogged()) {
     // Edit feed, folder, all
@@ -6470,9 +6569,9 @@ $type = $kf->hashType($currentHash);
     // remove sel used with javascript
     $shaarli = str_replace('${sel}', '', $shaarli);
 
-    $url = $item['link'];
-    $via = $item['via'];
-    $title = $item['title'];
+    $url = htmlspecialchars_decode($item['link']);
+    $via = htmlspecialchars_decode($item['via']);
+    $title = htmlspecialchars_decode($item['title']);
 
     if (parse_url($url, PHP_URL_HOST) !== parse_url($via, PHP_URL_HOST)) {
         $via = 'via '.$via;
@@ -6480,11 +6579,12 @@ $type = $kf->hashType($currentHash);
         $via = '';
     }
 
-    $shaarli = str_replace('${url}', $url, $shaarli);
-    $shaarli = str_replace('${title}', $title, $shaarli);
-    $shaarli = str_replace('${via}', $via, $shaarli);
+    $shaarli = str_replace('${url}', urlencode($url), $shaarli);
+    $shaarli = str_replace('${title}', urlencode($title), $shaarli);
+    $shaarli = str_replace('${via}', urlencode($via), $shaarli);
 
-    MyTool::redirect($shaarli);
+
+    header('Location: '.$shaarli);
 } else {
     if (Session::isLogged() || $kfc->public) {
         $kf->loadData();
