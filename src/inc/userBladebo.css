@@ -1,5 +1,7 @@
 @import url(simplified.css) ;
 
+
+
 li.has-unread a{
 	font-weight: bold;	
 	color:#3C893C;
@@ -18,11 +20,13 @@ li.has-unread a{
 	height:100%;
 }
 
-.not-so-full-height{
-    height: -webkit-calc(100% - 145px);
-    height: -moz-calc(100% - 145px);
-    height: calc(100% - 145px);
-	overflow:auto;
+@media (min-width: 481px) {
+	.not-so-full-height{
+		height: -webkit-calc(100% - 145px);
+		height: -moz-calc(100% - 145px);
+		height: calc(100% - 145px);
+		overflow:auto;
+	}
 }
 
 li.folder{
@@ -77,13 +81,43 @@ body{
 		display:block;
 		visibility:visible;
 	}
+	
+	.navbar-inner {
+		padding-right: 0px;
+		padding-left: 0px;
+	}
+	html, body, .full-height{
+		overflow:visible;
+	}
+	.not-so-full-height{
+		overflow:visible;
+		height:none;
+	}
+	.btn-group .btn {
+		width: 100%;
+		padding: 10px 0 !important;
+		margin: auto;
+	  } 
+	.btn-group {
+		width: 100%;
+		margin: 5px auto;
+	  }
+	ul.inline > li {
+		width: 25%;
+	}
+	.btn-break {
+		display: none;
+	}
+	.input-prepend input, .input-append input, .input-prepend input[class*="span"], .input-append input[class*="span"]{
+		display: initial;
+	}
 }
 
 @media (min-width: 481px) {
 	#paging-down{
 		display:none;
 		visibility:hidden;
-	}
+	}	
 }
 @media (max-width: 979px) and (min-width: 768px){
 	.row-fluid [class*="span"]{
