@@ -1,3 +1,5 @@
+@import url(simplified.css) ;
+
 li.has-unread a{
 	font-weight: bold;	
 	color:#3C893C;
@@ -24,30 +26,31 @@ li.has-unread a{
 }
 
 li.folder{
-	margin-bottom:-10px;
+	margin-bottom:-7px;
 }
 
 .container-fluid{
 	padding-right:2px;
+	padding-left: 11px;
 }
 
-li.feedSelected.has-unread a{
+li.current-feed.has-unread a{
 	font-weight: bold;	
 	color:red;
 }
 
-.folderSelected h5 a{
+.current-folder h5 a{
 	color:red;
 }
 
-.folder h5 a{
+.folder  > h5 a{
 	text-overflow: ellipsis;
 }
 
-li.folder h5{
-	padding-top: 5px;
+li.folder > h5{
 	margin-bottom: 0px;
 	padding: 0px 4px 0px 0px;
+	border: none;
 }
 
 li.feed {
@@ -81,4 +84,38 @@ body{
 		display:none;
 		visibility:hidden;
 	}
+}
+@media (max-width: 979px) and (min-width: 768px){
+	.row-fluid [class*="span"]{
+		margin-left: 0.762431%;
+	}
+	.row-fluid .span3 {
+		width: 23.928177%;
+	}
+}
+
+h5 {
+	font-size: 13px;
+}
+
+.ico {
+	position: relative;
+	width: 12px;
+	height: 12px;
+	display: inline-block;
+	margin-right: 4px;
+	margin-left: 4px;
+}
+
+.ico-b-disc {
+	background-color: #000;
+	border-radius: 8px;
+	width: 14px;
+	height: 14px;
+	position: absolute;
+	top: 1px;
+	left: 1px;
+}
+.label, .badge {
+	line-height: 9px;
 }
