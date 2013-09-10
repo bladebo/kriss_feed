@@ -28,37 +28,8 @@ define('PHPSUFFIX', ' */ ?>'); // Suffix to encapsulate data in php code.
 define('MIN_TIME_UPDATE', 5); // Minimum accepted time for update
 
 
-
-
-
-
-
 // fix some warning
 date_default_timezone_set('Europe/Paris'); 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 class FeedConf
@@ -157,7 +128,6 @@ class FeedConf
             /* favicon dir */
             if (!is_dir(INC_DIR)) {
                 if (!@mkdir(INC_DIR, 0755)) {
-
                     $pb->assign('message', sprintf(Intl::msg('Can not create %s directory, check permissions'), INC_DIR));
                     $pb->renderPage('message');
                 }
@@ -223,13 +193,6 @@ class FeedConf
             $this->setHash($_POST['setpassword']);
 
             $this->write();
-
-
-
-
-
-
-
 
             FeedPage::init(
                 array(
@@ -670,11 +633,9 @@ class FeedConf
                           'pagingMarkAs', 'disableSessionProtection', 'blank', 'lang');
 			$out = '<?php';
 			$out .= "\n";
-
 			foreach ($data as $key) {
 				$out .= '$this->'.$key.' = '.var_export($this->$key, true).";\n";
 			}
-
 			$out .= '?>';
 
 			if (!@file_put_contents($this->_file, $out)) {
@@ -688,7 +649,6 @@ class FeedPage
 {
     public static $var = array();
 
-
     public static function init($var)
     {
         FeedPage::$var = $var;
@@ -701,7 +661,6 @@ class FeedPage
     <base href="<?php echo $base;?>">
     <title><?php echo $pagetitle;?></title>
     <meta charset="utf-8">
-
 <?php if (is_file('inc/favicon.ico')) { ?>
     <link href="inc/favicon.ico" rel="icon" type="image/x-icon">
 <?php } else { ?>
@@ -710,1138 +669,7 @@ class FeedPage
 <?php if (is_file('inc/style.css')) { ?>
 <link type="text/css" rel="stylesheet" href="inc/style.css?version=<?php echo $version;?>" />
 <?php } else { ?>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
     <link type="text/css" rel="stylesheet" href="?file=style.css&amp;version=<?php echo $version;?>" />
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 <?php } ?>
 <?php if (is_file('inc/user.css')) { ?>
 <link type="text/css" rel="stylesheet" href="inc/user.css?version=<?php echo $version;?>" />
@@ -1930,9 +758,6 @@ class FeedPage
             <?php FeedPage::statusTpl(); ?>
           </div>
         </div>
-
-
-
       </div>
     </div>
     <script>document.installform.setlogin.focus();</script>
@@ -2057,353 +882,46 @@ class FeedPage
 <div id="menu" class="navbar">
   <div class="navbar-inner">
     <div class="container">
-
-
 	  <a id="menu-toggle" class="btn btn-navbar" data-toggle="collapse" data-target="#menu-collapse" title="<?php echo Intl::msg('Menu'); ?>"><?php echo Intl::msg('Menu'); ?></a>	  
-
-
-
 	  <a id="nav-home" class="brand ico-home" href="<?php echo MyTool::getUrl(); ?>" title="<?php echo Intl::msg('Home'); ?>"></a>
-
-
-
-
-
-
-
-
-
 	  <?php if (isset($currentHashView)) { ?><span class="brand"><?php echo $currentHashView ?></span><?php } ?>
-
-
-
-
 	  
       <div id="menu-collapse" class="nav-collapse collapse">
         <ul class="nav"><?php
-
 switch($template) {
   case 'stars':
   case 'index':
-
     foreach(array_keys($menu) as $menuOpt) {
       switch($menuOpt) {
         case 'menuView':
           if ($view === 'expanded') { ?>
-
  
 		  <li><a href="<?php echo $query.'view=list'; ?>" title="<?php echo Intl::msg('View as list'); ?>" class="menu-ico ico-list"><span class="menu-text menu-list"> <?php echo Intl::msg('View as list'); ?></span></a></li><?php } else { ?>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 		  
           <li><a href="<?php echo $query.'view=expanded'; ?>" title="<?php echo Intl::msg('View as expanded'); ?>" class="menu-ico ico-expanded"><span class="menu-text menu-expanded"> <?php echo Intl::msg('View as expanded'); ?></span></a></li><?php } break;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
         case 'menuListFeeds':
           if ($listFeeds == 'show') { ?>
-
 		  
                 <li><a href="<?php echo $query.'listFeeds=hide'; ?>" title="<?php echo Intl::msg('Hide feeds list'); ?>" class="menu-ico ico-list-feeds-hide"><span class="menu-text menu-list-feeds-hide"> <?php echo Intl::msg('Hide feeds list'); ?></span></a></li><?php } else { ?>
-
-
-
-
-
-
-
-
-
-
-
-
-
 				
 				<li><a href="<?php echo $query.'listFeeds=show'; ?>" title="<?php echo Intl::msg('Show feeds list'); ?>" class="menu-ico ico-list-feeds-show"><span class="menu-text menu-list-feeds-show"> <?php echo Intl::msg('Show feeds list'); ?></span></a></li><?php } break;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
         case 'menuFilter':
           if ($filter === 'unread') { ?>
 
-
           <li><a href="<?php echo $query.'filter=all'; ?>" title="<?php echo Intl::msg('Show all items'); ?>" class="menu-ico ico-filter-all"><span class="menu-text menu-filter-all"> <?php echo Intl::msg('Show all items'); ?></span></a></li><?php } else { ?>
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
           <li><a href="<?php echo $query.'filter=unread'; ?>" title="<?php echo Intl::msg('Show unread items'); ?>" class="menu-ico ico-filter-unread"><span class="menu-text menu-filter-unread"> <?php echo Intl::msg('Show unread items'); ?></span></a></li><?php } break;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
         case 'menuOrder':
           if ($order === 'newerFirst') { ?>
 
-
           <li><a href="<?php echo $query.'order=olderFirst'; ?>" title="<?php echo Intl::msg('Show older first'); ?>" class="menu-ico ico-order-older"><span class="menu-text menu-order"> <?php echo Intl::msg('Show older first'); ?></span></a></li><?php } else { ?>
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
           <li><a href="<?php echo $query.'order=newerFirst'; ?>" title="<?php echo Intl::msg('Show newer first'); ?>" class="menu-ico ico-order-newer"><span class="menu-text menu-order"> <?php echo Intl::msg('Show newer first'); ?></span></a></li><?php } break;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
         case 'menuUpdate':
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
           switch($currentHashType) {
             case 'all':
               $intl = Intl::msg('Update all');
               break;
-
-
-
-
-
             case 'folder':
               $intl = Intl::msg('Update folder');
               break;
@@ -2432,7 +950,6 @@ switch($template) {
           } ?>
 
           <li><a href="<?php echo $query.'read='.$currentHash; ?>" title="<?php echo $intl; ?>" class="menu-ico ico-mark-as-read"><span class="menu-text menu-mark-as-read"> <?php echo $intl; ?></span></a></li><?php
-
           break;
         case 'menuUnread':
           switch($currentHashType) {
@@ -2483,19 +1000,8 @@ switch($template) {
              }
           break;
         default:
-
-
-
-
-
-
-
-
-
-
           break;
       }
-
     }
 
     if ($kf->kfc->isLogged()) { ?>
@@ -2597,7 +1103,6 @@ switch($template) {
                       <label for="publicReader">
                         <input type="radio" id="publicReader" name="visibility" value="public" <?php echo ($kfcvisibility==='public'? 'checked="checked"' : ''); ?>/>
 
-
                         <?php echo Intl::msg('Public KrISS feed'); ?>
                       </label>
                       <span class="help-block">
@@ -2606,7 +1111,6 @@ switch($template) {
                       <label for="protectedReader">
                         <input type="radio" id="protectedReader" name="visibility" value="protected" <?php echo ($kfcvisibility==='protected'? 'checked="checked"' : ''); ?>/>
 
-
                         <?php echo Intl::msg('Protected KrISS feed'); ?>
                       </label>
                       <span class="help-block">
@@ -2614,7 +1118,6 @@ switch($template) {
                       </span>
                       <label for="privateReader">
                         <input type="radio" id="privateReader" name="visibility" value="private" <?php echo ($kfcvisibility==='private'? 'checked="checked"' : ''); ?>/>
-
                         <?php echo Intl::msg('Private KrISS feed'); ?>
                       </label>
                       <span class="help-block">
@@ -2628,8 +1131,6 @@ switch($template) {
                     <div class="controls">
                       <input type="text" id="shaarli" name="shaarli" value="<?php echo $kfcshaarli; ?>">
                       <span class="help-block"><?php echo Intl::msg('Options:'); ?><br>
-
-
                         - <?php echo Intl::msg('${url}: item link'); ?><br>
                         - <?php echo Intl::msg('${title}: item title'); ?><br>
                         - <?php echo Intl::msg('${via}: if domain of &lt;link&gt; and &lt;guid&gt; are different ${via} is equals to: <code>via &lt;guid&gt;</code>'); ?><br>
@@ -2828,7 +1329,6 @@ switch($template) {
                     <label class="control-label" for="menuOrder"><?php echo Intl::msg('Order'); ?></label>
                     <div class="controls">
                       <input type="text" id="menuOrder" name="menuOrder" value="<?php echo empty($kfcmenu['menuOrder'])?'0':$kfcmenu['menuOrder']; ?>">
-
                       <span class="help-block"><?php echo Intl::msg('Show older first'); ?>/<?php echo Intl::msg('Show newer first'); ?></span>
                     </div>
                   </div>
@@ -2871,15 +1371,12 @@ switch($template) {
                     <label class="control-label" for="menuHelp"><?php echo Intl::msg('Help'); ?></label>
                     <div class="controls">
                       <input type="text" id="menuHelp" name="menuHelp" value="<?php echo empty($kfcmenu['menuHelp'])?'0':$kfcmenu['menuHelp']; ?>">
-
                       <span class="help-block"><?php echo Intl::msg('Help'); ?></span>
                     </div>
                   </div>
                   <div class="control-group">
                     <label class="control-label" for="menuStars"><?php echo Intl::msg('Starred items'); ?></label>
                     <div class="controls">
-
-
                       <input type="text" id="menuStars" name="menuStars" value="<?php echo empty($kfcmenu['menuStars'])?'0':$kfcmenu['menuStars']; ?>">
                       <span class="help-block"><?php echo Intl::msg('Starred items'); ?></span>
                     </div>
@@ -2932,8 +1429,6 @@ switch($template) {
                   <legend><?php echo Intl::msg('Cron configuration'); ?></legend>
                   <code><?php echo MyTool::getUrl().'?update&cron='.$kfccron; ?></code>
                   <?php echo Intl::msg('You can use <code>&force</code> to force update.'); ?><br>
-
-
                   <?php echo Intl::msg('To update every hour:'); ?><br>
                   <code>0 * * * * wget "<?php echo MyTool::getUrl().'?update&cron='.$kfccron; ?>" -O /tmp/kf.cron</code><br>
                   <?php echo Intl::msg('If you can not use wget, you may try php command line:'); ?><br>
@@ -3005,11 +1500,8 @@ switch($template) {
             <div id="section">
               <h2><?php echo Intl::msg('Keyboard shortcuts'); ?></h2>
               <fieldset>
-
                 <legend><?php echo Intl::msg('Key legend'); ?></legend>
                 <dl class="dl-horizontal">
-
-
                   <dt>&#x23b5;</dt>
                   <dd><?php echo Intl::msg('Space key'); ?></dd>
                   <dt>&#x21e7;</dt>
@@ -3023,69 +1515,46 @@ switch($template) {
               <fieldset>
                 <legend><?php echo Intl::msg('Items navigation'); ?></legend>
                 <dl class="dl-horizontal">
-
-
                   <dt>&#x23b5;, t</dt>
                   <dd><?php echo Intl::msg('Toggle current item (open, close item in list view)'); ?></dd>
                 </dl>
                 <dl class="dl-horizontal">
-
-
                   <dt>m</dt>
                   <dd><?php echo Intl::msg('Mark current item as read if unread or unread if read'); ?></dd>
                 </dl>
                 <dl class="dl-horizontal">
-
-
                   <dt>&#x21e7; + m</dt>
                   <dd><?php echo Intl::msg('Mark current item as read if unread or unread if read and open current (useful in list view and unread filter)'); ?></dd>
                 </dl>
                 <dl class="dl-horizontal">
-
-
                   <dt>&#x2192;, n</dt>
                   <dd><?php echo Intl::msg('Go to next item'); ?></dd>
                 </dl>
                 <dl class="dl-horizontal">
-
-
                   <dt>&#x2190;, p</dt>
                   <dd><?php echo Intl::msg('Go to previous item'); ?></dd>
                 </dl>
                 <dl class="dl-horizontal">
-
-
                   <dt>&#x21e7; + n</dt>
                   <dd><?php echo Intl::msg('Go to next page'); ?></dd>
                 </dl>
                 <dl class="dl-horizontal">
-
-
                   <dt>&#x21e7; + p</dt>
                   <dd><?php echo Intl::msg('Go to previous page'); ?></dd>
                 </dl>
                 <dl class="dl-horizontal">
-
                   <dt>j</dt>
                   <dd><?php echo Intl::msg('Go to next item and open it (in list view)'); ?></dd>
                 </dl>
                 <dl class="dl-horizontal">
-
-
-
-
                   <dt>k</dt>
                   <dd><?php echo Intl::msg('Go to previous item and open it (in list view)'); ?></dd>
                 </dl>
                 <dl class="dl-horizontal">
-
-
                   <dt>o</dt>
                   <dd><?php echo Intl::msg('Open current item in new tab'); ?></dd>
                 </dl>
                 <dl class="dl-horizontal">
-
-
                   <dt>&#x21e7; + o</dt>
                   <dd><?php echo Intl::msg('Open current item in current window'); ?></dd>
                 </dl>
@@ -3101,45 +1570,34 @@ switch($template) {
               <fieldset>
                 <legend><?php echo Intl::msg('Menu navigation'); ?></legend>
                 <dl class="dl-horizontal">
-
-
                   <dt>h</dt>
                   <dd><?php echo Intl::msg('Go to Home page'); ?></dd>
                 </dl>
                 <dl class="dl-horizontal">
-
                   <dt>v</dt>
                   <dd><?php echo Intl::msg('Change view as list or expanded'); ?></dd>
                 </dl>
                 <dl class="dl-horizontal">
-
-
                   <dt>f</dt>
                   <dd><?php echo Intl::msg('Show or hide list of feeds/folders'); ?></dd>
                 </dl>
                 <dl class="dl-horizontal">
-
                   <dt>e</dt>
                   <dd><?php echo Intl::msg('Edit current selection (all, folder or feed)'); ?></dd>
                 </dl>
                 <dl class="dl-horizontal">
-
                   <dt>u</dt>
                   <dd><?php echo Intl::msg('Update current selection (all, folder or feed)'); ?></dd>
                 </dl>
                 <dl class="dl-horizontal">
-
                   <dt>r</dt>
                   <dd><?php echo Intl::msg('Reload the page as the F5 key in most of browsers'); ?></dd>
                 </dl>
                 <dl class="dl-horizontal">
-
-
                   <dt>?, F1</dt>
                   <dd><?php echo Intl::msg('Go to Help page (this page)'); ?></dd>
                 </dl>
               </fieldset>
-
               <h2><?php echo Intl::msg('Configuration check'); ?></h2>
               <fieldset>
                 <legend><?php echo Intl::msg('PHP configuration'); ?></legend>
@@ -3295,7 +1753,6 @@ switch($template) {
             </fieldset>
 
             <input class="btn" type="submit" name="cancel" value="<?php echo Intl::msg('Cancel'); ?>"/>
-
             <input class="btn" type="submit" name="save" value="<?php echo Intl::msg('Save modifications'); ?>" />
 
             <fieldset>
@@ -3533,7 +1990,6 @@ switch($template) {
               <legend><?php echo Intl::msg('Import opml file'); ?></legend>
 
 
-
               <div class="control-group">
                 <label class="control-label" for="filetoupload"><?php echo Intl::msg('Opml file:'); ?></label>
                 <div class="controls">
@@ -3692,7 +2148,6 @@ switch($template) {
 
     <?php if ($view==='list') { ?>
     <a id="item-toggle-<?php echo $itemHash; ?>" class="item-toggle item-toggle-plus" href="<?php echo $query.'current='.$itemHash.((!isset($_GET['open']) or $currentItemHash != $itemHash)?'&amp;open':''); ?>" data-toggle="collapse" data-target="#item-div-<?php echo $itemHash; ?>">
-
       <span class="ico ico-toggle-item">
         <span class="ico-b-disc"></span>
         <span class="ico-w-line-h"></span>
@@ -3782,7 +2237,6 @@ switch($template) {
         <?php if ($item['read'] == 1) { ?>
         <a class="item-mark-as" href="<?php echo $query.'unread='.$itemHash; ?>"><span class="label label-expanded"><?php echo $unread; ?></span></a>
         <?php } else { ?>
-
         <a class="item-mark-as" href="<?php echo $query.'read='.$itemHash; ?>"><span class="label label-expanded"><?php echo $read; ?></span></a>
         <?php } ?>
         <?php } ?>
@@ -3865,8 +2319,6 @@ foreach(array_keys($paging) as $pagingOpt) {
       break;
     default:
       break;
-
-
   }
 } ?>
 
@@ -3927,6 +2379,27 @@ foreach(array_keys($paging) as $pagingOpt) {
     <?php } else { ?>
 	<script type="text/javascript" src="?file=script.js&amp;version=<?php echo $version;?>"></script>
 	<?php } ?>
+		<!-- Piwik -->
+<script type="text/javascript">
+  var _paq = _paq || [];
+  _paq.push(["trackPageView"]);
+  _paq.push(["enableLinkTracking"]);
+
+  (function() {
+    var u=(("https:" == document.location.protocol) ? "https" : "http") + "://piwik.sallet.fr/";
+    _paq.push(["setTrackerUrl", u+"piwik.php"]);
+    _paq.push(["setSiteId", "5"]);
+    var d=document, g=d.createElement("script"), s=d.getElementsByTagName("script")[0]; g.type="text/javascript";
+    g.defer=true; g.async=true; g.src=u+"piwik.js"; s.parentNode.insertBefore(g,s);
+  })();
+</script>
+<!-- End Piwik Code -->
+<noscript>
+<!-- Piwik Image Tracker -->
+<img src="http://piwik.sallet.fr/piwik.php?idsite=5&amp;rec=1" style="border:0" alt="" />
+<!-- End Piwik -->
+</noscript>
+	
  </body>
 </html>
 <?php
@@ -3996,20 +2469,6 @@ class Feed
 
                 return true;
             } else {
-
-
-
-
-
-
-
-
-
-
-
-
-
-
                 $this->initData();
                 $this->writeData();
 
@@ -4023,7 +2482,6 @@ class Feed
 
     public function writeData()
     {
-
         if ($this->kfc->isLogged()) {
             $write = @file_put_contents(
                 $this->dataFile,
@@ -4579,28 +3037,6 @@ class Feed
 
     public function initFeedCache($feed, $force)
     {
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
         if (!empty($feed)) {
             if ($force) {
                 $feed['etag'] = '';
@@ -4616,26 +3052,11 @@ class Feed
             }
         }
         
-
         return $feed;
     }
 
     public function updateFeedCache($feed, $outputUrl)
     {
-
-
-
-
-
-
-
-
-
-
-
-
-
-
         // really new (2XX) and errors (4XX and 5XX) are considered new
         if ($outputUrl['code'] != 304) {
             if (preg_match('/^ETag: ([^\r\n]*)[\r\n]*$/im', $outputUrl['header'], $matches)) {
@@ -4646,8 +3067,6 @@ class Feed
             }
         }
 
-
-
         if (empty($feed['etag'])) {
             unset($feed['etag']);
         }
@@ -4655,50 +3074,13 @@ class Feed
             unset($feed['lastModified']);
         }
 
-
         return $feed;
     }
 
     public function updateFeedFromDom($feed, $dom) {
-
-
         if (empty($feed)) {
             // addFeed
             $feed = Rss::getFeed($dom);
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
             if (!MyTool::isUrl($feed['htmlUrl'])) {
                 $feed['htmlUrl'] = ' ';
@@ -4706,9 +3088,6 @@ class Feed
             if (empty($feed['description'])) {
                 $feed['description'] = ' ';
             }
-
-
-
             $feed['foldersHash'] = array();
             $feed['timeUpdate'] = 'auto';            
         } else if (empty($feed['description']) || empty($feed['htmlUrl'])) {
@@ -4721,13 +3100,10 @@ class Feed
                 }
                 $feed['description'] = $rssFeed['description'];
             }
-
-
             if (empty($feed['htmlUrl'])) {
                 if (empty($rssFeed['htmlUrl'])) {
                     $rssFeed['htmlUrl'] = ' ';
                 }
-
                 $feed['htmlUrl'] = $rssFeed['htmlUrl'];
             }
         }
@@ -4748,7 +3124,6 @@ class Feed
                     ? strtotime($item['time'])
                     : time();
                 if (MyTool::isUrl($item['via']) &&
-
                     parse_url($item['via'], PHP_URL_HOST)
                     != parse_url($item['link'], PHP_URL_HOST)) {
                     $newItems[$hashUrl]['via'] = $item['via'];
@@ -4771,203 +3146,33 @@ class Feed
     public function loadRss($xmlUrl, $feed = array(), $force = false)
     {
         $items = array();
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
         $feed = $this->initFeedCache($feed, $force);
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
         $outputUrl = MyTool::loadUrl($xmlUrl);
         
-
         if (!empty($outputUrl['error'])) {
             $feed['error'] = $outputUrl['error'];
         } else if (empty($outputUrl['data'])) {
             if ($outputUrl['code'] != 304) { // 304 Not modified
                 $feed['error'] = Intl::msg('Empty output data');;
             }
-
-
-
-
-
-
-
-
-
-
         } else {
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
             $outputDom = Rss::loadDom($outputUrl['data']);
             if (!empty($outputDom['error'])) {
                 $feed['error'] = $outputDom['error'];
             } else {
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
                 unset($feed['error']);
                 $feed = $this->updateFeedFromDom($feed, $outputDom['dom']);
                 $feed = $this->updateFeedCache($feed, $outputUrl);
                 $items = $this->updateItemsFromDom($outputDom['dom']);
             }
         }
-
-
-
-
-
         $feed['lastUpdate'] = time();
-
-
-
-
-
-
-
 
         return array(
             'feed' => $feed,
             'items' => $items,
         );
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
     }
 
     public function addChannel($xmlUrl)
@@ -4976,14 +3181,6 @@ class Feed
         $error = '';
         if (!isset($this->_data['feeds'][$feedHash])) {
             $output = $this->loadRss($xmlUrl);
-
-
-
-
-
-
-
-
 
             if (empty($output['feed']['error'])) {
                 $output['feed']['xmlUrl'] = $xmlUrl;
@@ -5001,7 +3198,6 @@ class Feed
                         $items[$itemHash]['author'] = $output['feed']['title'];
                     } else {
                         $items[$itemHash]['author']
-
                             = $output['feed']['title'] . ' ('
                             . $items[$itemHash]['author'] . ')';
                     }
@@ -5014,38 +3210,13 @@ class Feed
                     $items[$feedHash . $itemHash] = $items[$itemHash];
                     unset($items[$itemHash]);
                 }
-
-
-
-
-
-
-
-
-
-
-
                 $this->writeFeed($feedHash, $items);
-
-
             } else {
                 $error = $output['feed']['error'];
             }
-
-
-
-
-
-
         } else {
             $error = Intl::msg('Duplicated feed');
         }
-
-
-
-
-
-
 
         return array('error' => $error);
     }
@@ -5053,8 +3224,6 @@ class Feed
     public function getTimeUpdate($feed)
     {
         $max = $feed['timeUpdate'];
-
-
 
         if ($max == 'auto') {
             $max = $this->kfc->maxUpdate;
@@ -5065,13 +3234,8 @@ class Feed
             $max = $this->kfc->maxUpdate;
         }
 
-
-
-
         return (int) $max;
     }
-
-
 
     public function needUpdate($feed)
     {
@@ -5090,38 +3254,16 @@ class Feed
 
         if (!isset($this->_data['feeds'][$feedHash])) {
             return array(
-
                 'error' => Intl::msg('Unknown feedhash'),
                 'newItems' => $newItems
             );
         }
 
-
         $xmlUrl = $this->_data['feeds'][$feedHash]['xmlUrl'];
 
-
-
-
-
-
-
-
-
-
-
         $output = $this->loadRss($xmlUrl, $this->_data['feeds'][$feedHash], $force);
-
-
         // Update feed information
         $this->_data['feeds'][$feedHash] = $output['feed'];
-
-
-
-
-
-
-
-
         if (empty($output['feed']['error'])) {
             $this->loadFeed($feedHash);
             $oldItems = $this->_data['feeds'][$feedHash]['items'];
@@ -5135,7 +3277,6 @@ class Feed
             }
             $newLastTime = $lastTime;
         
-
             $rssItems = $output['items'];
             $rssItems = array_slice($rssItems, 0, $this->kfc->maxItems, true);
             $rssItemsHash = array_keys($rssItems);
@@ -5174,7 +3315,6 @@ class Feed
 
                 // Check if items may have been missed
                 if (count($oldItems) !== 0 and count($rssItemsHash) === count($newItemsHash)) {
-
                     $error = Intl::msg('Items may have been missed since last update');
                 }
 
@@ -5230,19 +3370,9 @@ class Feed
                     }
                 }
                 $this->_data['feeds'][$feedHash]['nbUnread'] = $nbUnread;
-
-
-
-
-
-
-
-
-
             }
 
             if (empty($this->_data['feeds'][$feedHash]['items'])) {
-
                 $this->_data['feeds'][$feedHash]['lastTime'] = $newLastTime;
             } else {
                 unset($this->_data['feeds'][$feedHash]['lastTime']);
@@ -5280,34 +3410,21 @@ class Feed
             $this->writeData();
         }
 
-
         return array(
             'error' => $error,
             'newItems' => $newItems
             );
-
-
-
     }
 
     public function updateFeedsHash($feedsHash, $force, $format = '')
     {
         $i = 0;
-
-
-
-
-
-
         $errorCount = 0;
         $noUpdateCount = 0;
         $successCount = 0;
         $nbItemsAdded = 0;
 
         $feedsHash = $this->orderFeedsForUpdate($feedsHash);
-
-
-
         $nbFeeds = count($feedsHash);
 
         ob_end_flush();
@@ -5331,8 +3448,6 @@ class Feed
         foreach ($feedsHash as $feedHash) {
             $i++;
             $feed = $this->getFeed($feedHash);
-
-
             $strBegin = "\n".'<tr><td>'.str_pad($i.'/'.$nbFeeds, 7, ' ', STR_PAD_LEFT).'</td><td> <a href="?currentHash='.$feedHash.'">'.substr(str_pad($feed['title'], 50), 0, 50).'</a> </td><td>';
             if ($format === 'html') {
                 echo str_pad($strBegin, 4096);
@@ -5345,11 +3460,9 @@ class Feed
             $lastTime += $time;
             if ($force or $this->needUpdate($feed)) {
                 $info = $this->updateChannel($feedHash, $force);
-
                 $countItems = count($info['newItems']);
                 $strEnd .= '<span class="text-success">'.str_pad($countItems, 3, ' ', STR_PAD_LEFT).'</span> </td><td>'.str_pad(number_format($time, 1), 6, ' ', STR_PAD_LEFT).'s </td><td>';
                 if (empty($info['error'])) {
-
                     $strEnd .= Intl::msg('Successfully updated').'</td></tr>';
                     $successCount++;
                     $nbItemsAdded += $countItems;
@@ -5359,11 +3472,8 @@ class Feed
                 }
             } else {
                 $strEnd .= str_pad('0', 3, ' ', STR_PAD_LEFT).' </td><td>'.str_pad(number_format($time, 1), 6, ' ', STR_PAD_LEFT).'s </td><td><span class="text-warning">'.Intl::msg('Already up-to-date').'</span></td></tr>';
-
-
                 $noUpdateCount++;
             }
-
             if ($format==='html') {
                 echo str_pad($strEnd, 4096);
                 ob_flush();
@@ -5401,10 +3511,6 @@ class Feed
     public function markAll($read) {
         $save = false;
 
-
-
-
-
         foreach (array_keys($this->_data['items']) as $itemHash) {
             if (!$save and $this->_data['items'][$itemHash][1] != $read) {
                 $save = true;
@@ -5414,14 +3520,9 @@ class Feed
         foreach (array_keys($this->_data['newItems']) as $itemHash) {
             if (!$save and $this->_data['newItems'][$itemHash][1] != $read) {
                 $save = true;
-
-
-
-
             }
             $this->_data['newItems'][$itemHash][1] = $read;
         }
-
 
         if ($save) {
             foreach ($this->_data['feeds'] as $feedHash => $feed) {
@@ -5433,20 +3534,11 @@ class Feed
             }
         }
 
-
         return $save;
     }
 
-
-
-
-
     public function markItem($itemHash, $read) {
         $save = false;
-
-
-
-
 
         if (isset($this->_data['items'][$itemHash])) {
             if ($this->_data['items'][$itemHash][1] != $read) {
@@ -5460,17 +3552,12 @@ class Feed
             }
         }
 
-
         if ($save) {
             $feedHash = substr($itemHash, 0, 6);
             if ($read == 1) {
                 $this->_data['feeds'][$feedHash]['nbUnread']--;
             } else {
                 $this->_data['feeds'][$feedHash]['nbUnread']++;
-
-
-
-
             }
         }
 
@@ -5496,7 +3583,6 @@ class Feed
                     $save = true;
                     $this->_data['newItems'][$itemHash][1] = $read;
                 }
-
             }
         }
 
@@ -5510,11 +3596,9 @@ class Feed
             }
         }
 
-
         return $save;
     }
         
-
     public function mark($hash, $read)
     {
         if (empty($hash) || $hash == 'all') {
@@ -5536,23 +3620,9 @@ class Feed
                             $feedsHash[] = $feedHash;
                         }
                     }
-
-
-
                 }
 
                 return $this->markFeeds($feedsHash, $read);
-
-
-
-
-
-
-
-
-
-
-
             }
         }
 
@@ -5599,12 +3669,8 @@ class Feed
 }
 
 
-
 class Intl
 {
-
-
-
     public static $lazy = false;
     public static $lang = "en_US";
     public static $dir = "locale";
@@ -5728,15 +3794,10 @@ class Intl
                 $entry['flags'] = $data;
                 break;
 
-
-
             case '#':   //translation-comments
                 $entryTemp['tcomment'] = $data;
                 $entry['tcomment'] = $data;
                 break;
-
-
-
 
             case '#.':  //extracted-comments
                 $entryTemp['ccomment'] = $data;
@@ -5789,7 +3850,6 @@ class Intl
                 break;
 
             default :
-
 
                 if( strpos($key, 'msgstr[') !== FALSE ) {
                     // translated-string-case-n
@@ -6026,7 +4086,6 @@ class MyTool
         }
 
         ob_start();
-
     }
 
     public static function isUrl($url)
@@ -6139,24 +4198,13 @@ class MyTool
 
         $scriptname = str_replace('/index.php', '/', $_SERVER["SCRIPT_NAME"]);
 
-
-
-
-
-
         if (!isset($_SERVER["SERVER_NAME"])) {
             return $scriptname;
         }
 
-
-
         return 'http' . ($https ? 's' : '') . '://'
             . $_SERVER["SERVER_NAME"] . $serverport . $scriptname;
     }
-
-
-
-
 
     public static function rrmdir($dir)
     {
@@ -6164,13 +4212,6 @@ class MyTool
             while (($file = @readdir($d)) !== false) {
                 if ( $file == '.' || $file == '..' ) {
                     continue;
-
-
-
-
-
-
-
                 } else {
                     unlink($dir . '/' . $file);
                 }
@@ -6273,11 +4314,6 @@ class MyTool
         header('Location: '.$rurl);
         exit();
     }
-
-
-
-
-
 }
 
 class Opml
@@ -6366,27 +4402,13 @@ class Opml
                         $feeds[$hashUrl] = $currentFeed;
                         $importCount++;
                     }
-
                 }
-
-
-
-
-
-
-
-
-
-
             }
-
-
 
             FeedPage::init(
                 array(
                     'base' => MyTool::getUrl(),
                     'message' => sprintf(Intl::msg('File %s (%s) was successfully processed: %d links imported'),htmlspecialchars($filename),MyTool::humanBytes($filesize), $importCount),
-
                     'button' => Intl::msg('Continue'),
                     'referer' => MyTool::getUrl(),
                     'version' => FEED_VERSION,
@@ -6398,22 +4420,14 @@ class Opml
             $kfData['feeds'] = $feeds;
             $kfData['folders'] = $folders;
 
-
-
-
-
             return $kfData;
         } else {
-
-
 
             FeedPage::init(
                 array(
                     'base' => MyTool::getUrl(),
                     'class' => 'text-success',
                     'message' => sprintf(Intl::msg('File %s (%s) has an unknown file format. Check encoding, try to remove accents and try again. Nothing was imported.'),htmlspecialchars($filename),MyTool::humanBytes($filesize)),
-
-
                     'referer' => MyTool::getUrl().'?import',
                     'version' => FEED_VERSION,
                     'pagetitle' => 'KrISS feed installation'
@@ -6422,10 +4436,7 @@ class Opml
             FeedPage::messageTpl();
             exit;
         }
-
-
     }
-
 
     public static function generateOpml($feeds, $folders)
     {
@@ -6436,28 +4447,12 @@ class Opml
         foreach ($feeds as $hashUrl => $arrayInfo) {
             if (empty($arrayInfo['foldersHash'])) {
                 $withoutFolder[] = $hashUrl;
-
-
-
-
-
-
-
             } else {
                 foreach ($arrayInfo['foldersHash'] as $folderHash) {
                     $withFolder[$folderHash][] = $hashUrl;
                 }
             }
-
-
-
         }
-
-
-
-
-
-
 
         $opmlData = new DOMDocument('1.0', 'UTF-8');
 
@@ -6470,28 +4465,14 @@ class Opml
         $opmlVersion->value = '1.0';
         $opml->appendChild($opmlVersion);
 
-
         // head node creation
         $head = $opmlData->createElement('head');
         $title = $opmlData->createElement('title', 'KrISS Feed');
         $head->appendChild($title);
         $opml->appendChild($head);
 
-
-
-
-
-
-
-
-
         // body node creation
         $body = $opmlData->createElement('body');
-
-
-
-
-
 
         // without folder outline node
         foreach ($withoutFolder as $hashUrl) {
@@ -6527,23 +4508,12 @@ class Opml
             $body->appendChild($outline);
         }
 
-
-
-
-
-
-
-
         // with folder outline node
         foreach ($withFolder as $folderHash => $arrayHashUrl) {
             $outline = $opmlData->createElement('outline');
-
-
-
             $outlineText = $opmlData->createAttribute('text');
             $outlineText->value = htmlspecialchars($folders[$folderHash]['title']);
             $outline->appendChild($outlineText);
-
 
             foreach ($arrayHashUrl as $hashUrl) {
                 $outlineKF = $opmlData->createElement('outline');
@@ -6577,9 +4547,6 @@ class Opml
                 $outline->appendChild($outlineKF);
             }
             $body->appendChild($outline);
-
-
-
         }
 
         $opml->appendChild($body);
@@ -6633,11 +4600,6 @@ class Opml
     {
         $newArray = array();
 
-
-
-
-
-
         for ($i = 0, $len = count($array); $i < $len; $i++) {
             if (isset($array[$i]['outline'])
                 && (isset($array[$i]['text'])
@@ -6648,10 +4610,6 @@ class Opml
                     $listFolders[] = $array[$i]['text'];
                 } else {
                     $listFolders[] = $array[$i]['title'];
-
-
-
-
                 }
                 $newArray = array_merge(
                     $newArray,
@@ -6672,11 +4630,6 @@ class Opml
                             if (!in_array(
                                 $val,
                                 $newArray[$xmlUrl]['folders']
-
-
-
-
-
                             )) {
                                 $newArray[$xmlUrl]['folders'][] = $val;
                             }
@@ -6714,8 +4667,6 @@ class PageBuilder
     private function init()
     {
         $this->tpl = true;
-
-
     }
 
     // 
@@ -6745,7 +4696,6 @@ class PageBuilder
             $classPage->$method();
             ob_end_flush();
         } else {
-
             return false;
         }
         if ($exit) {
@@ -6756,18 +4706,14 @@ class PageBuilder
     }
 }
 
-
 class Plugin
 {
-
     public static $dir = "plugins";
     public static $hooks = array();
-
 
     public static function init() {
         $arrayPlugins = glob(self::$dir. '/*.php');
       
-
         if(is_array($arrayPlugins)) {  
             foreach($arrayPlugins as $plugin) {  
                 include $plugin;  
@@ -6775,15 +4721,11 @@ class Plugin
         }
     }
 
-
-
-
     public static function listAll() {
         $list = array();
         self::callHook('Plugin_registry', array(&$list));
         return $list;
     }
-
 
     public static function addHook($hookName, $functionName, $priority = 10) {
         self::$hooks[$hookName][$priority][] = $functionName;
@@ -6803,13 +4745,9 @@ class Plugin
 
 class Rss
 {
-
-
     const UNKNOWN = 0;
     const RSS = 1;
     const ATOM = 2;
-
-
 
     public static $feedFormat = array(
        'title' => array('>title'),
@@ -6834,31 +4772,14 @@ class Rss
             if (strpos($attr, '=') !== false) {
                 list($attr, $val) = explode('=', $attr);
             }
-
             if (!$node->hasAttribute($attr)
                 || (!empty($val) && $node->getAttribute($attr) !== $val)) {
                 return false;
             }
         }
 
-
-
-
-
-
-
         return true;
     }
-
-
-
-
-
-
-
-
-
-
 
     public static function filterNodeListByName($nodes, $name)
     {
@@ -6875,8 +4796,6 @@ class Rss
 
     public static function getNodesName($node, $name)
     {
-
-
         if (strpos($name, ':') !== false) {
             list(, $localname) = explode(':', $name);
             $nodes = $node->getElementsByTagNameNS('*', $localname);
@@ -6887,11 +4806,8 @@ class Rss
         return self::filterNodeListByName($nodes, $name);
     }
 
-
     public static function getElement($node, $selectors)
     {
-
-
         $res = '';
         $selector = array_shift($selectors);
         $attributes = explode('[', str_replace(']','',$selector));
@@ -6900,8 +4816,6 @@ class Rss
             $name = substr($name, 0, -1);
             $res = array();
         }
-
-
 
         $nodes = self::getNodesName($node, $name);
         foreach ($nodes as $currentNode) {
@@ -6915,9 +4829,6 @@ class Rss
                         } else {
                             $res = $currentNode->textContent;
                         }
-
-
-
                     } else {
                         if (is_array($res)) {
                             $res[] = $currentNode->getAttribute($attr);
@@ -6934,19 +4845,11 @@ class Rss
             }
         }
 
-
-
         return $res;
     }
 
-
     public static function formatElement($dom, $element, $formats)
     {
-
-
-
-
-
         $newElement = array();
         foreach ($formats as $format => $list) {
             $newElement[$format] = '';
@@ -6978,22 +4881,11 @@ class Rss
             }
         }
 
-
         return $newElement;
     }
 
     public static function getFeed($dom)
     {
-
-
-
-
-
-
-
-
-
-
         $feed = new DOMNodelist;
 
         $type = self::getType($dom);
@@ -7003,10 +4895,8 @@ class Rss
             $feed = $dom->getElementsByTagName('feed')->item(0);
         }
 
-
         return self::formatElement($dom, $feed, self::$feedFormat);
     }
-
 
     public static function getItems($dom, $nb = -1)
     {
@@ -7151,8 +5041,6 @@ class Session
     {
         self::banInit();
         if (self::banCanLogin()) {
-
-
             if ($login === $loginTest && $password === $passwordTest) {
                 self::banLoginOk();
                 // Generate unique random number to sign forms (HMAC)
@@ -7169,7 +5057,6 @@ class Session
                 return true;
             }
             self::banLoginFailed();
-
         }
 
         return false;
@@ -7191,9 +5078,7 @@ class Session
             return false;
         }
         // User accessed a page : Update his/her session expiration date.
-
         $_SESSION['expires_on'] = time() + self::$inactivityTimeout;
-
 
         return true;
     }
@@ -7208,8 +5093,6 @@ class Session
         $_SESSION['tokens'][$rnd]=1;
 
         return $rnd;
-
-
     }
 
     public static function isToken($token)
@@ -7411,7 +5294,6 @@ vVxLc9xGkr7vr6hh2EMqgq8m2Xy0ZHs1eliaESWGSMnr00Y1urobIhqAC0CTlMMRe51/sbe15rCn/Qf8
 // Check if php version is correct
 MyTool::initPHP();
 // Initialize Session
-
 Session::$sessionName = 'kriss';
 Session::$banFile = BAN_FILE;
 Session::init();
@@ -8838,8 +6720,6 @@ dd {
   float: right;
 }
 
-
-
 /**
  * flags
  * http://flag-sprites.com/en_US/
@@ -8856,8 +6736,6 @@ dd {
 #flags-sel:target #hide-flags, #flags-sel #show-flags {
   display: inline-block;
 }
-
-
 
 #flags-sel:target #show-flags, #flags-sel #hide-flags {
   display: none;
@@ -8928,7 +6806,6 @@ dd {
    * http://javascript.info/tutorial/bubbling-and-capturing
    */
   function stopBubbling(event) {
-
     if(event.stopPropagation) {
       event.stopPropagation();
     }
@@ -9002,7 +6879,6 @@ dd {
       // Prevent multiple calls
       if (this.callinprogress) {
         throw "Call in progress";
-
       }
       this.callinprogress = true;
       this.userhandler = handler;
@@ -9012,7 +6888,6 @@ dd {
       // Assign a closure to the onreadystatechange callback
       this.xhr.onreadystatechange = function() {
         self.stateChangeCallback(self);
-
       };
       this.xhr.send(null);
     },
@@ -9069,7 +6944,6 @@ dd {
         break;
       }
     }
-
   };
 
   /**
@@ -9265,7 +7139,6 @@ dd {
       }
       sel = getSelectionHtml();
       if (sel !== '') {
-
         sel = 'Ã‚Â«' + sel + 'Ã‚Â»';
       }
 
@@ -9496,9 +7369,6 @@ dd {
         addClass(item, 'read');
         toggleMarkAsLinkItem(itemHash);
         if (filter === 'unread') {
-
-
-
           url += '&currentHash=' + currentHash +
             '&page=' + currentPage +
             '&last=' + listItemsHash[listItemsHash.length - 1];
@@ -9513,8 +7383,6 @@ dd {
         }
       }
     } else {
-
-
       url = '?currentHash=' + currentHash +
         '&page=' + currentPage;
     }
@@ -9605,12 +7473,10 @@ dd {
 
   function markAsRead(itemHash) {
     setNbUnread(currentUnread - 1);
-
   }
 
   function markAsUnread(itemHash) {
     setNbUnread(currentUnread + 1);
-
   }
 
   /**
@@ -9618,7 +7484,6 @@ dd {
    */
   function loadDivItem(itemHash, noFocus) {
     var element, url, client, cacheItem;
-
     element = document.getElementById('item-div-'+itemHash);
     if (element.childNodes.length <= 1) {
       cacheItem = getCacheItem(itemHash);
@@ -9630,8 +7495,6 @@ dd {
         removeCacheItem(itemHash);
       } else {
         url = '?'+(stars?'stars&':'')+'currentHash=' + currentHash +
-
-
           '&current=' + itemHash +
           '&ajax';
         client = new HTTPClient();
@@ -9792,7 +7655,6 @@ dd {
     var markAs = intlRead, starred = intlStar, target = ' target="_blank"';
 
     if (item['read'] == 1) {
-
       markAs = intlUnread;
     }
 
@@ -9851,7 +7713,6 @@ dd {
       '<div class="clear"></div>';
 
     initLinkItems(div.getElementsByTagName('a'));
-
     initCollapse(div.getElementsByTagName('a'));
     anonymize(div);
   }
@@ -9860,7 +7721,6 @@ dd {
     var markAs = intlRead, target = ' target="_blank"';
 
     if (item['read'] == 1) {
-
       markAs = intlUnread;
     }
 
@@ -10015,10 +7875,6 @@ dd {
   function initListItems() {
     var url, client;
 
-
-
-
-
     url = '?currentHash=' + currentHash +
       '&page=' + currentPage +
       '&last=' + listItemsHash[listItemsHash.length -1] +
@@ -10160,9 +8016,6 @@ dd {
   function initUpdate() {
     window.setTimeout(updateNextFeed, 1000);
   }
-
-
-
 
   /**
    * Navigation
@@ -10343,7 +8196,6 @@ dd {
       if (currentItemHash !== '') {
         var item = document.getElementById('item-'+currentItemHash),
           itemDiv = document.getElementById('item-div-'+currentItemHash);
-
         addClass(item, 'current');
         addClass(itemDiv, 'current');
         setItemFocus(itemDiv);
@@ -10390,32 +8242,18 @@ dd {
           var touch = e.targetTouches[0];
           stop = { time: ( new Date() ).getTime(),
                    coords: [ touch.pageX, touch.pageY ] };
-
-
-
-
-
-
         }
-
-
       };
 
       addEvent(window, 'touchmove', moveHandler);
       addEvent(window, 'touchend', function (e) {
         removeEvent(window, 'touchmove', moveHandler);
         if ( start && stop ) {
-
-
-
-
-
           if ( stop.time - start.time < durationThreshold &&
             Math.abs( start.coords[ 0 ] - stop.coords[ 0 ] ) > horizontalDistanceThreshold &&
             Math.abs( start.coords[ 1 ] - stop.coords[ 1 ] ) < verticalDistanceThreshold
              ) {
             if ( start.coords[0] > stop.coords[ 0 ] ) {
-
               nextItem();
             }
             else {
@@ -10590,8 +8428,6 @@ dd {
       listElements = paging.getElementsByTagName('a');
       for (i = 0; i < listElements.length; i += 1) {
         if (hasClass(listElements[i], 'previous-page')) {
-
-
           listElements[i].href = '?currentHash=' + currentHash + '&previousPage=' + currentPage;
           if (currentPage === 1) {
             if (!hasClass(listElements[i], 'disabled')) {
@@ -10604,8 +8440,6 @@ dd {
           }
         }
         if (hasClass(listElements[i], 'next-page')) {
-
-
           listElements[i].href = '?currentHash=' + currentHash + '&nextPage=' + currentPage;
           if (currentPage === maxPage) {
             if (!hasClass(listElements[i], 'disabled')) {
@@ -10630,8 +8464,6 @@ dd {
       listElements = paging.getElementsByTagName('a');
       for (i = 0; i < listElements.length; i += 1) {
         if (hasClass(listElements[i], 'previous-page')) {
-
-
           listElements[i].href = '?currentHash=' + currentHash + '&previousPage=' + currentPage;
           if (currentPage === 1) {
             if (!hasClass(listElements[i], 'disabled')) {
@@ -10644,8 +8476,6 @@ dd {
           }
         }
         if (hasClass(listElements[i], 'next-page')) {
-
-
           listElements[i].href = '?currentHash=' + currentHash + '&nextPage=' + currentPage;
           if (currentPage === maxPage) {
             if (!hasClass(listElements[i], 'disabled')) {
@@ -10705,13 +8535,9 @@ dd {
       listElements = paging.getElementsByTagName('a');
       for (i = 0; i < listElements.length; i += 1) {
         if (hasClass(listElements[i], 'previous-item')) {
-
-
           listElements[i].href = '?currentHash=' + currentHash + '&previous=' + currentItemHash;
         }
         if (hasClass(listElements[i], 'next-item')) {
-
-
           listElements[i].href = '?currentHash=' + currentHash + '&next=' + currentItemHash;
 
         }
@@ -10723,14 +8549,9 @@ dd {
       listElements = paging.getElementsByTagName('a');
       for (i = 0; i < listElements.length; i += 1) {
         if (hasClass(listElements[i], 'previous-item')) {
-
-
           listElements[i].href = '?currentHash=' + currentHash + '&previous=' + currentItemHash;
         }
         if (hasClass(listElements[i], 'next-item')) {
-
-
-
           listElements[i].href = '?currentHash=' + currentHash + '&next=' + currentItemHash;
         }
       }
@@ -10929,15 +8750,12 @@ dd {
   window.removeEvent = removeEvent;
   window.addEvent = addEvent;
 })();
-
 // unread count for favicon part
 if(typeof GM_getValue == 'undefined') {
 	GM_getValue = function(name, fallback) {
 		return fallback;
 	};
 }
-
-
 
 // Register GM Commands and Methods
 if(typeof GM_registerMenuCommand !== 'undefined') {
@@ -11170,7 +8988,6 @@ $kfc = new FeedConf(CONFIG_FILE, FEED_VERSION);
 $kf = new Feed(DATA_FILE, CACHE_DIR, $kfc);
 $ks = new Star(STAR_FILE, ITEM_FILE, $kfc);
 
-
 $kfp = new FeedPage(STYLE_FILE);
 
 // autosave opml
@@ -11226,7 +9043,6 @@ $pb->assign('addFavicon', $kfc->addFavicon);
 $pb->assign('preload', $kfc->preload);
 $pb->assign('blank', $kfc->blank);
 $pb->assign('kf', $kf);
-
 $pb->assign('isLogged', $kfc->isLogged());
 $pb->assign('pagetitle', strip_tags($kfc->title));
 
@@ -11378,8 +9194,6 @@ if (isset($_GET['login'])) {
                 $info = $kf->updateChannel($_GET['update']);
                 if (empty($info['error'])) {
                     $info['error'] = $feed['description'];
-
-
                 }
                 $info['newItems'] = array_keys($info['newItems']);
                 $result['update'] = $info;
@@ -11500,12 +9314,6 @@ if (isset($_GET['login'])) {
                 : $_SERVER['HTTP_REFERER'];
 
             $pb->assign('message', sprintf(Intl::msg('The file you are trying to upload is probably bigger than what this webserver can accept (%s). Please upload in smaller chunks.'), MyTool::humanBytes(MyTool::getMaxFileSize())));
-
-
-
-
-
-
             $pb->assign('referer', $rurl);
             $pb->renderPage('message');
         }
@@ -11551,14 +9359,6 @@ if (isset($_GET['login'])) {
             MyTool::redirect('?currentHash='.$hash);
         } else {
             // Add fail
-
-
-
-
-
-
-
-
             $pb->assign('message', $addc['error']);
             $pb->renderPage('message');
         }
@@ -11576,9 +9376,7 @@ if (isset($_GET['login'])) {
     $pb->renderPage('addFeed');
 } elseif (isset($_GET['toggleFolder']) && $kfc->isLogged()) {
     $kf->loadData();
-
         $kf->toggleFolder($_GET['toggleFolder']);
-
     $kf->writeData();
 	
     MyTool::redirect($query);
@@ -11853,12 +9651,6 @@ $type = $kf->hashType($currentHash);
                 $addFoldersHash = array_diff($addFoldersHash, $removeFoldersHash);
 
                 $kf->editFeed($feedHash, '', '', $addFoldersHash, '', '');
-
-
-
-
-
-
             }
             $kf->sortFolders();
             $kf->writeData();
@@ -12026,4 +9818,3 @@ $type = $kf->hashType($currentHash);
         $pb->renderPage('login');
     }
 }
-
