@@ -3,8 +3,9 @@ kriss_feed (version bladebo) (version 8)
 
 A simple and smart (or stupid) feed reader.
 
-My version is with some template changes 
-Take care, my [src] version is not updated with my changes
+My version is with some template changes.
+
+Take care, my [src] version is not updated with my changes.
 
 
 An example is available on [tontof.net](http://tontof.net/feed).
